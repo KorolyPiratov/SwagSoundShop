@@ -1,5 +1,6 @@
 -- Категории
-INSERT INTO categories (name, description) VALUES                                       ('Гитары', 'Акустические и электрогитары'),
+INSERT INTO categories (name, description) VALUES
+    ('Гитары', 'Акустические и электрогитары'),
     ('Клавишные', 'Синтезаторы и пианино'),
     ('Ударные', 'Барабаны и перкуссия'),
     ('Аксессуары', 'Струны, медиаторы, стойки');
@@ -21,8 +22,8 @@ INSERT INTO products (name, description, price, stock_quantity, category_id) VAL
 -- Сотрудники (пароль для всех: "password123" — BCrypt хэш)
 INSERT INTO employees (first_name, last_name, email, password, phone, role) VALUES
     ('Иван', 'Админов', 'admin@swagsound.ru',
-    'Admin1', '+79001112233', 'ADMIN'),
+    '$2a$10$YpUzzP0VoR0y.W5F8/z0Yeek6i0GUtT6CiNmOkURJ31Zhglwn/piu', '+79001112233', 'ADMIN'),
     ('Мария', 'Менеджерова', 'manager@swagsound.ru',
-    'Meneger2', '+79002223344', 'MANAGER'),
+    '$2a$10$YpUzzP0VoR0y.W5F8/z0Yeek6i0GUtT6CiNmOkURJ31Zhglwn/piu', '+79002223344', 'MANAGER'),
     ('Пётр', 'Продавцов', 'seller@swagsound.ru',
-    'Prodavec3', '+79003334455', 'SELLER');
+    '$2a$10$YpUzzP0VoR0y.W5F8/z0Yeek6i0GUtT6CiNmOkURJ31Zhglwn/piu', '+79003334455', 'SELLER');
