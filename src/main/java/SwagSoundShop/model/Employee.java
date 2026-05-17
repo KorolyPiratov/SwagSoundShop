@@ -1,5 +1,6 @@
 package SwagSoundShop.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,10 +25,10 @@ public class Employee {
 
     @Column(unique = true, nullable = false)
     private String email;
-
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
-
+    
     private String phone;
 
     @Enumerated(EnumType.STRING)

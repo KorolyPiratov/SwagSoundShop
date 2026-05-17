@@ -30,8 +30,14 @@ public class PaymentService {
                                         Payment.PaymentMethod method,
                                         Payment.PaymentStatus status,
                                         BigDecimal amountMin, BigDecimal amountMax) {
-        return paymentRepository.findWithFilters(
-                dateFrom, dateTo, method, status, amountMin, amountMax);
+        return paymentRepository.findAll().stream()
+                .filter(p -> dateFrom == null || (p.getPaidAt() != null && !p.getPaidAt().isBefore(dateFrom)))
+                .filter(p -> dateTo == null || (p.getPaidAt() != null && !p.getPaidAt().isAfter(dateTo)))
+                .filter(p -> method == null || p.getMethod() == method)
+                .filter(p -> status == null || p.getStatus() == status)
+                .filter(p -> amountMin == null || p.getAmount().compareTo(amountMin) >= 0)
+                .filter(p -> amountMax == null || p.getAmount().compareTo(amountMax) <= 0)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Payment create(PaymentRequest request) {

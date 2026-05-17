@@ -3,6 +3,8 @@ package SwagSoundShop.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "categories")
@@ -23,8 +25,10 @@ public class Category {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
+    @JsonIgnore
     private Category parent;
 
     @OneToMany(mappedBy = "parent")
+    @JsonIgnore
     private List<Category> children;
 }
