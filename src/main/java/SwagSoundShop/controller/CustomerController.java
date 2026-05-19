@@ -2,11 +2,13 @@ package SwagSoundShop.controller;
 
 import SwagSoundShop.dto.request.CustomerRequest;
 import SwagSoundShop.model.Customer;
+import SwagSoundShop.repository.CustomerRepository;
 import SwagSoundShop.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -14,6 +16,7 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerRepository customerRepository;
 
     @GetMapping
     public ResponseEntity<List<Customer>> getAll() {
@@ -25,9 +28,12 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody CustomerRequest request) {
-        return ResponseEntity.ok(customerService.create(request));
+    @PostMapping("/public")
+    public ResponseEntity<Customer> createPublic(@RequestBody CustomerRequest request) {
+        // Проверяем есть ли уже клиент с таким email
+        return customerRepository.findByEmail(request.getEmail())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.ok(customerService.create(request)));
     }
 
     @PutMapping("/{id}")

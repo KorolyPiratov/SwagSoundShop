@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Платежи</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo"><span>панель управления</span>SwagSoundShop</div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Дашборд
+            </a>
+            <a href="/products.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                Товары
+            </a>
+            <a href="/orders.html" class="nav-item active">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Заказы
+            </a>
+            <a href="/payments.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Платежи
+            </a>
+            <a href="/customers.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Клиенты
+            </a>
+            <a href="/employees.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Сотрудники
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user"></div>
+            <button class="btn-logout" onclick="logout()">Выйти</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title">Платежи</h1>
+            <p class="page-subtitle">История платежей и финансовая отчётность</p>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <div class="filters">
+                    <div class="form-group">
+                        <label class="form-label">Дата от</label>
+                        <input class="form-control" id="date-from" type="date" onchange="loadPayments()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Дата до</label>
+                        <input class="form-control" id="date-to" type="date" onchange="loadPayments()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Метод</label>
+                        <select class="form-control" id="filter-method" onchange="loadPayments()">
+                            <option value="">Все</option>
+                            <option value="CARD">Карта</option>
+                            <option value="CASH">Наличные</option>
+                            <option value="ONLINE">Онлайн</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Статус</label>
+                        <select class="form-control" id="filter-status" onchange="loadPayments()">
+                            <option value="">Все</option>
+                            <option value="PAID">Оплачен</option>
+                            <option value="PENDING">Ожидает</option>
+                            <option value="REFUNDED">Возврат</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сумма от</label>
+                        <input class="form-control" id="amount-min" type="number" placeholder="0" oninput="loadPayments()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сумма до</label>
+                        <input class="form-control" id="amount-max" type="number" placeholder="999999" oninput="loadPayments()">
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-primary" onclick="openPayModal()">+ Добавить платёж</button>
+                    <button class="btn btn-sky" onclick="exportExcel()">↓ Excel</button>
+                </div>
+            </div>
+
+            <div id="total-bar" style="background:var(--honeydew);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:14px;display:none">
+                Итого: <strong id="total-amount">0 ₽</strong> по <strong id="total-count">0</strong> платежам
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Заказ</th>
+                        <th>Клиент</th>
+                        <th>Сумма</th>
+                        <th>Метод</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                    </tr>
+                    </thead>
+                    <tbody id="payments-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- PAY MODAL -->
+<div class="modal-overlay" id="pay-modal">
+    <div class="modal">
+        <div class="modal-title">Добавить платёж</div>
+        <div class="form-group">
+            <label class="form-label">Заказ</label>
+            <select class="form-control" id="pay-order"></select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Сумма</label>
+            <input class="form-control" id="pay-amount" type="number" placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Метод оплаты</label>
+            <select class="form-control" id="pay-method">
+                <option value="CARD">Карта</option>
+                <option value="CASH">Наличные</option>
+                <option value="ONLINE">Онлайн</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePayModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="createPayment()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/api.js"></script>
+<script>
+    checkAuth();
+    document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
+
+    const methodLabels = { CARD: 'Карта', CASH: 'Наличные', ONLINE: 'Онлайн' };
+    const statusLabels = { PAID: 'Оплачен', PENDING: 'Ожидает', REFUNDED: 'Возврат' };
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    async function loadPayments() {
+        const payments = await get('/payments') || [];
+
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+        const method = document.getElementById('filter-method').value;
+        const status = document.getElementById('filter-status').value;
+        const amountMin = parseFloat(document.getElementById('amount-min').value) || null;
+        const amountMax = parseFloat(document.getElementById('amount-max').value) || null;
+
+        let filtered = payments.filter(p => {
+            const date = p.paidAt ? new Date(p.paidAt) : null;
+            if (dateFrom && date && date < new Date(dateFrom)) return false;
+            if (dateTo && date && date > new Date(dateTo + 'T23:59:59')) return false;
+            if (method && p.method !== method) return false;
+            if (status && p.status !== status) return false;
+            if (amountMin && p.amount < amountMin) return false;
+            if (amountMax && p.amount > amountMax) return false;
+            return true;
+        });
+
+        const total = filtered.reduce((s, p) => s + Number(p.amount), 0);
+        const totalBar = document.getElementById('total-bar');
+        totalBar.style.display = filtered.length ? 'block' : 'none';
+        document.getElementById('total-amount').textContent = total.toLocaleString('ru') + ' ₽';
+        document.getElementById('total-count').textContent = filtered.length;
+
+        const tbody = document.getElementById('payments-table');
+        if (!filtered.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Платежей не найдено</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(p => `
+        <tr>
+            <td style="color:var(--text-muted)">#${p.id}</td>
+            <td>#${p.order?.id}</td>
+            <td>${p.order?.customer?.firstName || ''} ${p.order?.customer?.lastName || ''}</td>
+            <td><strong>${Number(p.amount).toLocaleString('ru')} ₽</strong></td>
+            <td><span class="badge badge-${p.method?.toLowerCase()}">${methodLabels[p.method] || p.method}</span></td>
+            <td><span class="badge badge-${p.status?.toLowerCase()}">${statusLabels[p.status] || p.status}</span></td>
+            <td style="color:var(--text-muted);font-size:13px">${p.paidAt ? new Date(p.paidAt).toLocaleDateString('ru') : '—'}</td>
+        </tr>
+    `).join('');
+    }
+
+    async function exportExcel() {
+        await downloadExcel('/payments/export');
+        showToast('Excel файл скачан');
+    }
+
+    async function openPayModal() {
+        const orders = await get('/orders') || [];
+        const unpaid = orders.filter(o => o.status !== 'PAID' && o.status !== 'CANCELLED');
+        document.getElementById('pay-order').innerHTML = unpaid.map(o =>
+            `<option value="${o.id}" data-amount="${o.totalAmount}">Заказ #${o.id} — ${Number(o.totalAmount).toLocaleString('ru')} ₽</option>`
+        ).join('');
+
+        if (unpaid.length) {
+            document.getElementById('pay-amount').value = unpaid[0].totalAmount;
+        }
+
+        document.getElementById('pay-order').onchange = function() {
+            const opt = this.options[this.selectedIndex];
+            document.getElementById('pay-amount').value = opt.dataset.amount;
+        };
+
+        document.getElementById('pay-modal').classList.add('open');
+    }
+
+    function closePayModal() {
+        document.getElementById('pay-modal').classList.remove('open');
+    }
+
+    async function createPayment() {
+        const orderId = parseInt(document.getElementById('pay-order').value);
+        const amount = parseFloat(document.getElementById('pay-amount').value);
+        const method = document.getElementById('pay-method').value;
+
+        if (!orderId || !amount) { showToast('Заполните все поля', 'error'); return; }
+
+        await post('/payments', { orderId, amount, method });
+        showToast('Платёж добавлен');
+        closePayModal();
+        loadPayments();
+    }
+
+    document.getElementById('pay-modal').addEventListener('click', e => {
+        if (e.target === document.getElementById('pay-modal')) closePayModal();
+    });
+
+    loadPayments();
+</script>
+</body>
+</html>

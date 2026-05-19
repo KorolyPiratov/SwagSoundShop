@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Дашборд</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <span>панель управления</span>
+            SwagSoundShop
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard.html" class="nav-item active">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Дашборд
+            </a>
+            <a href="/products.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                Товары
+            </a>
+            <a href="/orders.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Заказы
+            </a>
+            <a href="/payments.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Платежи
+            </a>
+            <a href="/customers.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Клиенты
+            </a>
+            <a href="/employees.html" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Сотрудники
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user"></div>
+            <button class="btn-logout" onclick="logout()">Выйти</button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <div class="page-header">
+            <h1 class="page-title">Дашборд</h1>
+            <p class="page-subtitle">Общая статистика магазина</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card coral">
+                <div class="stat-value" id="stat-products">—</div>
+                <div class="stat-label">Товаров</div>
+            </div>
+            <div class="stat-card sky">
+                <div class="stat-value" id="stat-orders">—</div>
+                <div class="stat-label">Заказов</div>
+            </div>
+            <div class="stat-card peach">
+                <div class="stat-value" id="stat-customers">—</div>
+                <div class="stat-label">Клиентов</div>
+            </div>
+            <div class="stat-card tomato">
+                <div class="stat-value" id="stat-payments">—</div>
+                <div class="stat-label">Платежей</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div class="card">
+                <h3 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--tomato)">Последние заказы</h3>
+                <div id="recent-orders">Загрузка...</div>
+            </div>
+            <div class="card">
+                <h3 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--tomato)">Последние платежи</h3>
+                <div id="recent-payments">Загрузка...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="/api.js"></script>
+<script>
+    checkAuth();
+    document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
+
+    const statusLabels = {
+        NEW: 'Новый', IN_PROGRESS: 'В работе', PAID: 'Оплачен',
+        SHIPPED: 'Отправлен', DELIVERED: 'Доставлен', CANCELLED: 'Отменён'
+    };
+
+    async function loadDashboard() {
+        const [products, orders, customers, payments] = await Promise.all([
+            get('/products'),
+            get('/orders'),
+            get('/customers'),
+            get('/payments')
+        ]);
+
+        document.getElementById('stat-products').textContent = products?.length ?? 0;
+        document.getElementById('stat-orders').textContent = orders?.length ?? 0;
+        document.getElementById('stat-customers').textContent = customers?.length ?? 0;
+        document.getElementById('stat-payments').textContent = payments?.length ?? 0;
+
+        const recentOrders = (orders || []).slice(-5).reverse();
+        document.getElementById('recent-orders').innerHTML = recentOrders.length ? recentOrders.map(o => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+                <div style="font-weight:500;font-size:14px">Заказ #${o.id}</div>
+                <div style="font-size:12px;color:var(--text-muted)">${o.customer?.firstName} ${o.customer?.lastName}</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-weight:600;font-size:14px">${Number(o.totalAmount).toLocaleString('ru')} ₽</div>
+                <span class="badge badge-${o.status?.toLowerCase()}">${statusLabels[o.status] || o.status}</span>
+            </div>
+        </div>
+    `).join('') : '<p style="color:var(--text-muted);font-size:14px">Заказов пока нет</p>';
+
+        const recentPayments = (payments || []).slice(-5).reverse();
+        document.getElementById('recent-payments').innerHTML = recentPayments.length ? recentPayments.map(p => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+                <div style="font-weight:500;font-size:14px">Платёж #${p.id}</div>
+                <div style="font-size:12px;color:var(--text-muted)">Заказ #${p.order?.id}</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-weight:600;font-size:14px">${Number(p.amount).toLocaleString('ru')} ₽</div>
+                <span class="badge badge-${p.method?.toLowerCase()}">${p.method}</span>
+            </div>
+        </div>
+    `).join('') : '<p style="color:var(--text-muted);font-size:14px">Платежей пока нет</p>';
+    }
+
+    loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Корзина</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background: var(--honeydew); }
+        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
+        .navbar-links { display: flex; gap: 32px; list-style: none; }
+        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; }
+        .navbar-links a:hover { color: var(--tomato); }
+        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+        .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; padding: 40px 48px; }
+
+        .cart-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--tomato); margin-bottom: 24px; }
+
+        .cart-item { background: white; border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .cart-item-icon { width: 64px; height: 64px; background: linear-gradient(135deg, var(--honeydew), var(--peach)); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .cart-item-price { color: var(--tomato); font-weight: 600; }
+        .cart-item-controls { display: flex; align-items: center; gap: 8px; }
+        .qty-btn { width: 32px; height: 32px; border: 1.5px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .qty-btn:hover { border-color: var(--tomato); color: var(--tomato); }
+        .qty-value { font-weight: 600; min-width: 24px; text-align: center; }
+        .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; transition: color 0.2s; }
+        .cart-item-remove:hover { color: var(--tomato); }
+
+        .order-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); position: sticky; top: 84px; height: fit-content; }
+        .order-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--tomato); margin-bottom: 20px; }
+        .order-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
+        .order-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 18px; padding-top: 12px; border-top: 2px solid var(--border); margin-top: 12px; }
+
+        .order-form { margin-top: 20px; }
+
+        .empty-cart { text-align: center; padding: 80px 20px; }
+        .empty-cart-icon { font-size: 64px; margin-bottom: 16px; }
+        .empty-cart-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--tomato); margin-bottom: 8px; }
+        .empty-cart-sub { color: var(--text-muted); margin-bottom: 24px; }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
+    <ul class="navbar-links">
+        <li><a href="/index.html">Главная</a></li>
+        <li><a href="/catalog.html">Каталог</a></li>
+        <li><a href="/login.html">Для сотрудников</a></li>
+    </ul>
+    <div>
+        <a href="/cart.html" class="cart-btn">
+            🛒 Корзина
+            <span class="cart-count" id="cart-count">0</span>
+        </a>
+    </div>
+</nav>
+
+<div class="cart-layout" id="cart-layout">
+    <!-- Заполняется JS -->
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const categoryIcons = {
+        'Гитары': '🎸', 'Клавишные': '🎹', 'Ударные': '🥁',
+        'Аксессуары': '🎵', 'Акустические': '🪕', 'Электрогитары': '⚡',
+        'Синтезаторы': '🎛️', 'Пианино': '🎹'
+    };
+
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); render(); }
+
+    function updateCartCount() {
+        const count = getCart().reduce((s, i) => s + i.quantity, 0);
+        document.getElementById('cart-count').textContent = count;
+    }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function changeQty(id, delta) {
+        const cart = getCart();
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            item.quantity += delta;
+            if (item.quantity <= 0) cart.splice(cart.indexOf(item), 1);
+        }
+        saveCart(cart);
+    }
+
+    function removeItem(id) {
+        const cart = getCart().filter(i => i.id !== id);
+        saveCart(cart);
+    }
+
+    async function placeOrder() {
+        const cart = getCart();
+        if (!cart.length) return;
+
+        const firstName = document.getElementById('o-firstname').value.trim();
+        const lastName = document.getElementById('o-lastname').value.trim();
+        const email = document.getElementById('o-email').value.trim();
+        const phone = document.getElementById('o-phone').value.trim();
+
+        if (!firstName || !lastName || !email) {
+            showToast('Заполните имя, фамилию и email', 'error');
+            return;
+        }
+
+        try {
+            // Создаём или находим клиента
+            const customerRes = await fetch('http://localhost:8080/api/customers/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firstName, lastName, email, phone })
+            });
+
+            if (!customerRes.ok) throw new Error('Ошибка создания клиента');
+            const customer = await customerRes.json();
+
+            // Создаём заказ
+            const orderRes = await fetch('http://localhost:8080/api/orders/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: customer.id,
+                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
+                })
+            });
+
+            if (!orderRes.ok) throw new Error('Ошибка создания заказа');
+
+            showToast('Заказ оформлен! Менеджер свяжется с вами.', 'success');
+            localStorage.removeItem('cart');
+            setTimeout(() => window.location.href = '/index.html', 2000);
+
+        } catch (e) {
+            showToast('Ошибка при оформлении заказа: ' + e.message, 'error');
+        }
+    }
+
+    function render() {
+        const cart = getCart();
+        updateCartCount();
+
+        if (!cart.length) {
+            document.getElementById('cart-layout').innerHTML = `
+            <div class="empty-cart" style="grid-column:1/-1">
+                <div class="empty-cart-icon">🛒</div>
+                <div class="empty-cart-title">Корзина пуста</div>
+                <div class="empty-cart-sub">Добавьте товары из каталога</div>
+                <a href="/catalog.html" class="btn btn-primary">Перейти в каталог</a>
+            </div>
+        `;
+            return;
+        }
+
+        const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+        document.getElementById('cart-layout').innerHTML = `
+        <div>
+            <div class="cart-title">Корзина (${cart.length})</div>
+            ${cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-icon">🎵</div>
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${Number(item.price).toLocaleString('ru')} ₽</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                        <span class="qty-value">${item.quantity}</span>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                    </div>
+                    <button class="cart-item-remove" onclick="removeItem(${item.id})">✕</button>
+                </div>
+            `).join('')}
+        </div>
+
+        <div class="order-card">
+            <div class="order-title">Оформление заказа</div>
+            <div class="order-row"><span>Товаров:</span><span>${cart.reduce((s,i)=>s+i.quantity,0)} шт.</span></div>
+            <div class="order-total"><span>Итого:</span><span>${Number(total).toLocaleString('ru')} ₽</span></div>
+
+            <div class="order-form">
+                <div class="form-group">
+                    <label class="form-label">Имя</label>
+                    <input class="form-control" id="o-firstname" placeholder="Иван">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Фамилия</label>
+                    <input class="form-control" id="o-lastname" placeholder="Иванов">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" id="o-email" type="email" placeholder="ivan@mail.ru">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Телефон</label>
+                    <input class="form-control" id="o-phone" placeholder="+79001234567">
+                </div>
+                <div style="background:var(--honeydew);padding:12px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
+                    🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrder()">
+                    Оформить заказ
+                </button>
+            </div>
+        </div>
+    `;
+    }
+
+    render();
+</script>
+</body>
+</html>

@@ -30,8 +30,12 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/", "/*.html", "/*.css", "/*.js", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/products/**", "/api/categories/**").permitAll()
+                        .requestMatchers("/api/customers/public", "/api/orders/public").permitAll()
                         .requestMatchers("/api/employees/**").hasRole("ADMIN")
                         .requestMatchers("/api/payments/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "MANAGER")
