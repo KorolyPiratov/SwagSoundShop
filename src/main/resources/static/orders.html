@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwagSoundShop — Платежи</title>
+    <title>SwagSoundShop — Заказы</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <aside class="sidebar">
         <div class="sidebar-logo"><span>панель управления</span>SwagSoundShop</div>
         <nav class="sidebar-nav">
-            <a href="/dashboard.html" class="nav-item">
+            <a href="/index.html" class="nav-item">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 Дашборд
             </a>
@@ -44,56 +44,26 @@
 
     <main class="main">
         <div class="page-header">
-            <h1 class="page-title">Платежи</h1>
-            <p class="page-subtitle">История платежей и финансовая отчётность</p>
+            <h1 class="page-title">Заказы</h1>
+            <p class="page-subtitle">Управление заказами магазина</p>
         </div>
 
         <div class="card">
             <div class="toolbar">
                 <div class="filters">
                     <div class="form-group">
-                        <label class="form-label">Дата от</label>
-                        <input class="form-control" id="date-from" type="date" onchange="loadPayments()">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Дата до</label>
-                        <input class="form-control" id="date-to" type="date" onchange="loadPayments()">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Метод</label>
-                        <select class="form-control" id="filter-method" onchange="loadPayments()">
-                            <option value="">Все</option>
-                            <option value="CARD">Карта</option>
-                            <option value="CASH">Наличные</option>
-                            <option value="ONLINE">Онлайн</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Статус</label>
-                        <select class="form-control" id="filter-status" onchange="loadPayments()">
-                            <option value="">Все</option>
+                        <select class="form-control" id="filter-status" onchange="loadOrders()">
+                            <option value="">Все статусы</option>
+                            <option value="NEW">Новый</option>
+                            <option value="IN_PROGRESS">В работе</option>
                             <option value="PAID">Оплачен</option>
-                            <option value="PENDING">Ожидает</option>
-                            <option value="REFUNDED">Возврат</option>
+                            <option value="SHIPPED">Отправлен</option>
+                            <option value="DELIVERED">Доставлен</option>
+                            <option value="CANCELLED">Отменён</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Сумма от</label>
-                        <input class="form-control" id="amount-min" type="number" placeholder="0" oninput="loadPayments()">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Сумма до</label>
-                        <input class="form-control" id="amount-max" type="number" placeholder="999999" oninput="loadPayments()">
-                    </div>
                 </div>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-primary" onclick="openPayModal()">+ Добавить платёж</button>
-                    <button class="btn btn-sky" onclick="exportExcel()">↓ Excel</button>
-                </div>
-            </div>
-
-            <div id="total-bar" style="background:var(--honeydew);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:14px;display:none">
-                Итого: <strong id="total-amount">0 ₽</strong> по <strong id="total-count">0</strong> платежам
+                <button class="btn btn-primary" onclick="openCreateModal()">+ Новый заказ</button>
             </div>
 
             <div class="table-wrap">
@@ -101,44 +71,56 @@
                     <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Заказ</th>
                         <th>Клиент</th>
                         <th>Сумма</th>
-                        <th>Метод</th>
                         <th>Статус</th>
                         <th>Дата</th>
+                        <th>Действия</th>
                     </tr>
                     </thead>
-                    <tbody id="payments-table"></tbody>
+                    <tbody id="orders-table"></tbody>
                 </table>
             </div>
         </div>
     </main>
 </div>
 
-<!-- PAY MODAL -->
-<div class="modal-overlay" id="pay-modal">
+<!-- CREATE MODAL -->
+<div class="modal-overlay" id="create-modal">
     <div class="modal">
-        <div class="modal-title">Добавить платёж</div>
+        <div class="modal-title">Новый заказ</div>
         <div class="form-group">
-            <label class="form-label">Заказ</label>
-            <select class="form-control" id="pay-order"></select>
+            <label class="form-label">Клиент</label>
+            <select class="form-control" id="order-customer"></select>
         </div>
-        <div class="form-group">
-            <label class="form-label">Сумма</label>
-            <input class="form-control" id="pay-amount" type="number" placeholder="0.00">
+        <div id="order-items-list"></div>
+        <button class="btn btn-secondary btn-sm" onclick="addItem()" style="margin-bottom:16px">+ Добавить товар</button>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCreateModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="createOrder()">Создать заказ</button>
         </div>
+    </div>
+</div>
+
+<!-- STATUS MODAL -->
+<div class="modal-overlay" id="status-modal">
+    <div class="modal">
+        <div class="modal-title">Изменить статус</div>
+        <input type="hidden" id="status-order-id">
         <div class="form-group">
-            <label class="form-label">Метод оплаты</label>
-            <select class="form-control" id="pay-method">
-                <option value="CARD">Карта</option>
-                <option value="CASH">Наличные</option>
-                <option value="ONLINE">Онлайн</option>
+            <label class="form-label">Новый статус</label>
+            <select class="form-control" id="new-status">
+                <option value="NEW">Новый</option>
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="PAID">Оплачен</option>
+                <option value="SHIPPED">Отправлен</option>
+                <option value="DELIVERED">Доставлен</option>
+                <option value="CANCELLED">Отменён</option>
             </select>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closePayModal()">Отмена</button>
-            <button class="btn btn-primary" onclick="createPayment()">Сохранить</button>
+            <button class="btn btn-secondary" onclick="closeStatusModal()">Отмена</button>
+            <button class="btn btn-primary" onclick="updateStatus()">Сохранить</button>
         </div>
     </div>
 </div>
@@ -150,8 +132,12 @@
     checkAuth();
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
 
-    const methodLabels = { CARD: 'Карта', CASH: 'Наличные', ONLINE: 'Онлайн' };
-    const statusLabels = { PAID: 'Оплачен', PENDING: 'Ожидает', REFUNDED: 'Возврат' };
+    const statusLabels = {
+        NEW: 'Новый', IN_PROGRESS: 'В работе', PAID: 'Оплачен',
+        SHIPPED: 'Отправлен', DELIVERED: 'Доставлен', CANCELLED: 'Отменён'
+    };
+
+    let allProducts = [], orderItems = [];
 
     function showToast(msg, type = 'success') {
         const t = document.getElementById('toast');
@@ -160,98 +146,95 @@
         setTimeout(() => t.className = 'toast', 3000);
     }
 
-    async function loadPayments() {
-        const payments = await get('/payments') || [];
+    async function loadOrders() {
+        const statusFilter = document.getElementById('filter-status').value;
+        let orders = await get('/orders') || [];
+        if (statusFilter) orders = orders.filter(o => o.status === statusFilter);
 
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
-        const method = document.getElementById('filter-method').value;
-        const status = document.getElementById('filter-status').value;
-        const amountMin = parseFloat(document.getElementById('amount-min').value) || null;
-        const amountMax = parseFloat(document.getElementById('amount-max').value) || null;
-
-        let filtered = payments.filter(p => {
-            const date = p.paidAt ? new Date(p.paidAt) : null;
-            if (dateFrom && date && date < new Date(dateFrom)) return false;
-            if (dateTo && date && date > new Date(dateTo + 'T23:59:59')) return false;
-            if (method && p.method !== method) return false;
-            if (status && p.status !== status) return false;
-            if (amountMin && p.amount < amountMin) return false;
-            if (amountMax && p.amount > amountMax) return false;
-            return true;
-        });
-
-        const total = filtered.reduce((s, p) => s + Number(p.amount), 0);
-        const totalBar = document.getElementById('total-bar');
-        totalBar.style.display = filtered.length ? 'block' : 'none';
-        document.getElementById('total-amount').textContent = total.toLocaleString('ru') + ' ₽';
-        document.getElementById('total-count').textContent = filtered.length;
-
-        const tbody = document.getElementById('payments-table');
-        if (!filtered.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Платежей не найдено</td></tr>';
+        const tbody = document.getElementById('orders-table');
+        if (!orders.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Заказов нет</td></tr>';
             return;
         }
 
-        tbody.innerHTML = filtered.map(p => `
+        tbody.innerHTML = orders.map(o => `
         <tr>
-            <td style="color:var(--text-muted)">#${p.id}</td>
-            <td>#${p.order?.id}</td>
-            <td>${p.order?.customer?.firstName || ''} ${p.order?.customer?.lastName || ''}</td>
-            <td><strong>${Number(p.amount).toLocaleString('ru')} ₽</strong></td>
-            <td><span class="badge badge-${p.method?.toLowerCase()}">${methodLabels[p.method] || p.method}</span></td>
-            <td><span class="badge badge-${p.status?.toLowerCase()}">${statusLabels[p.status] || p.status}</span></td>
-            <td style="color:var(--text-muted);font-size:13px">${p.paidAt ? new Date(p.paidAt).toLocaleDateString('ru') : '—'}</td>
+            <td style="color:var(--text-muted)">#${o.id}</td>
+            <td><strong>${o.customer?.firstName} ${o.customer?.lastName}</strong><br>
+                <span style="font-size:12px;color:var(--text-muted)">${o.customer?.email}</span></td>
+            <td><strong>${Number(o.totalAmount).toLocaleString('ru')} ₽</strong></td>
+            <td><span class="badge badge-${o.status?.toLowerCase()}">${statusLabels[o.status] || o.status}</span></td>
+            <td style="color:var(--text-muted);font-size:13px">${new Date(o.orderDate).toLocaleDateString('ru')}</td>
+            <td>
+                <button class="btn btn-secondary btn-sm" onclick="openStatusModal(${o.id}, '${o.status}')">Статус</button>
+            </td>
         </tr>
     `).join('');
     }
 
-    async function exportExcel() {
-        await downloadExcel('/payments/export');
-        showToast('Excel файл скачан');
+    async function openCreateModal() {
+        orderItems = [];
+        const customers = await get('/customers') || [];
+        allProducts = await get('/products') || [];
+
+        const sel = document.getElementById('order-customer');
+        sel.innerHTML = customers.map(c => `<option value="${c.id}">${c.firstName} ${c.lastName}</option>`).join('');
+
+        renderItems();
+        document.getElementById('create-modal').classList.add('open');
     }
 
-    async function openPayModal() {
-        const orders = await get('/orders') || [];
-        const unpaid = orders.filter(o => o.status !== 'PAID' && o.status !== 'CANCELLED');
-        document.getElementById('pay-order').innerHTML = unpaid.map(o =>
-            `<option value="${o.id}" data-amount="${o.totalAmount}">Заказ #${o.id} — ${Number(o.totalAmount).toLocaleString('ru')} ₽</option>`
-        ).join('');
-
-        if (unpaid.length) {
-            document.getElementById('pay-amount').value = unpaid[0].totalAmount;
-        }
-
-        document.getElementById('pay-order').onchange = function() {
-            const opt = this.options[this.selectedIndex];
-            document.getElementById('pay-amount').value = opt.dataset.amount;
-        };
-
-        document.getElementById('pay-modal').classList.add('open');
+    function closeCreateModal() {
+        document.getElementById('create-modal').classList.remove('open');
     }
 
-    function closePayModal() {
-        document.getElementById('pay-modal').classList.remove('open');
+    function addItem() {
+        orderItems.push({ productId: allProducts[0]?.id, quantity: 1 });
+        renderItems();
     }
 
-    async function createPayment() {
-        const orderId = parseInt(document.getElementById('pay-order').value);
-        const amount = parseFloat(document.getElementById('pay-amount').value);
-        const method = document.getElementById('pay-method').value;
-
-        if (!orderId || !amount) { showToast('Заполните все поля', 'error'); return; }
-
-        await post('/payments', { orderId, amount, method });
-        showToast('Платёж добавлен');
-        closePayModal();
-        loadPayments();
+    function renderItems() {
+        document.getElementById('order-items-list').innerHTML = orderItems.map((item, i) => `
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:8px;align-items:center">
+            <select class="form-control" onchange="orderItems[${i}].productId=parseInt(this.value)">
+                ${allProducts.map(p => `<option value="${p.id}" ${p.id==item.productId?'selected':''}>${p.name} — ${Number(p.price).toLocaleString('ru')} ₽</option>`).join('')}
+            </select>
+            <input class="form-control" type="number" value="${item.quantity}" min="1" style="width:70px"
+                onchange="orderItems[${i}].quantity=parseInt(this.value)">
+            <button class="btn btn-danger btn-sm" onclick="orderItems.splice(${i},1);renderItems()">✕</button>
+        </div>
+    `).join('') || '<p style="color:var(--text-muted);font-size:13px;margin-bottom:12px">Добавьте товары в заказ</p>';
     }
 
-    document.getElementById('pay-modal').addEventListener('click', e => {
-        if (e.target === document.getElementById('pay-modal')) closePayModal();
-    });
+    async function createOrder() {
+        if (!orderItems.length) { showToast('Добавьте товары', 'error'); return; }
+        const customerId = parseInt(document.getElementById('order-customer').value);
+        await post('/orders', { customerId, items: orderItems });
+        showToast('Заказ создан');
+        closeCreateModal();
+        loadOrders();
+    }
 
-    loadPayments();
+    function openStatusModal(id, currentStatus) {
+        document.getElementById('status-order-id').value = id;
+        document.getElementById('new-status').value = currentStatus;
+        document.getElementById('status-modal').classList.add('open');
+    }
+
+    function closeStatusModal() {
+        document.getElementById('status-modal').classList.remove('open');
+    }
+
+    async function updateStatus() {
+        const id = document.getElementById('status-order-id').value;
+        const status = document.getElementById('new-status').value;
+        await patch(`/orders/${id}/status?status=${status}`);
+        showToast('Статус обновлён');
+        closeStatusModal();
+        loadOrders();
+    }
+
+    loadOrders();
 </script>
 </body>
 </html>

@@ -136,6 +136,12 @@
     checkAuth();
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
 
+    const isAdmin = hasRole('ADMIN');
+
+    if (!isAdmin) {
+        document.querySelector('button[onclick="openModal()"]')?.style.setProperty('display', 'none');
+    }
+
     const roleLabels = { ADMIN: 'Администратор', MANAGER: 'Менеджер', SELLER: 'Продавец' };
     let allEmployees = [];
 
@@ -176,8 +182,9 @@
             <td><span class="badge badge-${e.role?.toLowerCase()}">${roleLabels[e.role] || e.role}</span></td>
             <td>
                 <div style="display:flex;gap:8px">
-                    <button class="btn btn-secondary btn-sm" onclick="editEmployee(${e.id})">Изменить</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${e.id})">Удалить</button>
+                    ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="editEmployee(${e.id})">Изменить</button>` : ''}
+                    ${isAdmin ? `<button class="btn btn-danger btn-sm" onclick="deleteEmployee(${e.id})">Удалить</button>` : ''}
+                    ${!isAdmin ? '<span style="color:var(--text-muted);font-size:13px">Только просмотр</span>' : ''}
                 </div>
             </td>
         </tr>

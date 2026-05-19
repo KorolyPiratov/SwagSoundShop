@@ -15,13 +15,21 @@ function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
     localStorage.removeItem('role');
-    window.location.href = '/login.html';
+    window.location.href = '/index.html';
 }
 
 function checkAuth() {
     if (!getToken()) {
         window.location.href = '/login.html';
     }
+}
+
+function getRole() {
+    return localStorage.getItem('role');
+}
+
+function hasRole(...roles) {
+    return roles.includes(getRole());
 }
 
 async function request(method, path, body = null) {

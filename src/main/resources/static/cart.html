@@ -55,7 +55,7 @@
     <ul class="navbar-links">
         <li><a href="/index.html">Главная</a></li>
         <li><a href="/catalog.html">Каталог</a></li>
-        <li><a href="/login.html">Для сотрудников</a></li>
+        <li><a href="/customer-login.html" id="profile-link">Войти</a></li>
     </ul>
     <div>
         <a href="/cart.html" class="cart-btn">
@@ -171,6 +171,50 @@
         }
 
         const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        const customerToken = localStorage.getItem('customer_token');
+
+        const orderBlock = customerToken ? `
+        <div id="profile-info" style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+            <span>👤</span>
+            <span id="profile-info-text">Загрузка данных...</span>
+        </div>
+        <div style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
+            🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrderAuth()">
+            Оформить заказ
+        </button>
+    ` : `
+        <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;margin-bottom:16px">
+            <div style="font-size:24px;margin-bottom:8px">👤</div>
+            <div style="font-weight:600;margin-bottom:4px">Войдите для быстрого оформления</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Ваши данные подставятся автоматически</div>
+            <a href="/customer-login.html" class="btn btn-primary" style="justify-content:center;width:100%">Войти или зарегистрироваться</a>
+        </div>
+        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:12px">— или оформить как гость —</div>
+        <div class="form-group">
+            <label class="form-label">Имя</label>
+            <input class="form-control" id="o-firstname" placeholder="Иван">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Фамилия</label>
+            <input class="form-control" id="o-lastname" placeholder="Иванов">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control" id="o-email" type="email" placeholder="ivan@mail.ru">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input class="form-control" id="o-phone" placeholder="+79001234567">
+        </div>
+        <div style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
+            🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrderGuest()">
+            Оформить заказ
+        </button>
+    `;
 
         document.getElementById('cart-layout').innerHTML = `
         <div>
@@ -196,33 +240,99 @@
             <div class="order-title">Оформление заказа</div>
             <div class="order-row"><span>Товаров:</span><span>${cart.reduce((s,i)=>s+i.quantity,0)} шт.</span></div>
             <div class="order-total"><span>Итого:</span><span>${Number(total).toLocaleString('ru')} ₽</span></div>
-
-            <div class="order-form">
-                <div class="form-group">
-                    <label class="form-label">Имя</label>
-                    <input class="form-control" id="o-firstname" placeholder="Иван">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Фамилия</label>
-                    <input class="form-control" id="o-lastname" placeholder="Иванов">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input class="form-control" id="o-email" type="email" placeholder="ivan@mail.ru">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Телефон</label>
-                    <input class="form-control" id="o-phone" placeholder="+79001234567">
-                </div>
-                <div style="background:var(--honeydew);padding:12px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
-                    🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
-                </div>
-                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrder()">
-                    Оформить заказ
-                </button>
-            </div>
+            <div class="order-form">${orderBlock}</div>
         </div>
     `;
+
+        // Если вошёл — загружаем данные профиля
+        if (customerToken) loadProfileInfo();
+    }
+
+    async function loadProfileInfo() {
+        try {
+            const res = await fetch('http://localhost:8080/api/customer-auth/profile', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('customer_token') }
+            });
+            const profile = await res.json();
+            document.getElementById('profile-info-text').textContent =
+                `${profile.firstName} ${profile.lastName} · ${profile.email}`;
+            // Сохраняем данные профиля для использования при заказе
+            window._customerProfile = profile;
+        } catch (e) {
+            document.getElementById('profile-info-text').textContent = 'Ошибка загрузки профиля';
+        }
+    }
+
+    async function placeOrderAuth() {
+        const cart = getCart();
+        if (!cart.length) return;
+        const profile = window._customerProfile;
+        if (!profile) { showToast('Ошибка загрузки профиля', 'error'); return; }
+
+        try {
+            const orderRes = await fetch('http://localhost:8080/api/orders/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: profile.id,
+                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
+                })
+            });
+
+            if (!orderRes.ok) throw new Error('Ошибка создания заказа');
+
+            showToast('Заказ оформлен! Ожидайте звонка менеджера.', 'success');
+            localStorage.removeItem('cart');
+            setTimeout(() => window.location.href = '/profile.html', 2000);
+        } catch (e) {
+            showToast('Ошибка: ' + e.message, 'error');
+        }
+    }
+
+    async function placeOrderGuest() {
+        const cart = getCart();
+        if (!cart.length) return;
+
+        const firstName = document.getElementById('o-firstname').value.trim();
+        const lastName = document.getElementById('o-lastname').value.trim();
+        const email = document.getElementById('o-email').value.trim();
+        const phone = document.getElementById('o-phone').value.trim();
+
+        if (!firstName || !lastName || !email) {
+            showToast('Заполните имя, фамилию и email', 'error');
+            return;
+        }
+
+        try {
+            const customerRes = await fetch('http://localhost:8080/api/customers/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firstName, lastName, email, phone })
+            });
+            const customer = await customerRes.json();
+
+            const orderRes = await fetch('http://localhost:8080/api/orders/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: customer.id,
+                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
+                })
+            });
+
+            if (!orderRes.ok) throw new Error('Ошибка создания заказа');
+
+            showToast('Заказ оформлен! Менеджер свяжется с вами.', 'success');
+            localStorage.removeItem('cart');
+            setTimeout(() => window.location.href = '/index.html', 2000);
+        } catch (e) {
+            showToast('Ошибка: ' + e.message, 'error');
+        }
+    }
+    // В конце каждой страницы
+    if (localStorage.getItem('customer_token')) {
+        document.getElementById('profile-link').textContent = 'Профиль';
+        document.getElementById('profile-link').href = '/profile.html';
     }
 
     render();

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Профиль</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background: var(--honeydew); }
+        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
+        .navbar-links { display: flex; gap: 32px; list-style: none; }
+        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; }
+        .navbar-links a:hover { color: var(--tomato); }
+        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+        .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; padding: 40px 48px; }
+
+        .profile-sidebar {
+            height: fit-content;
+            position: sticky;
+            top: 84px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral), var(--tomato));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            margin: 0 auto 16px;
+        }
+
+        .profile-name { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 4px; }
+        .profile-email { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+        .profile-nav { background: white; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+        .profile-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; font-size: 14px; font-weight: 500; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; color: var(--text); }
+        .profile-nav-item:hover { background: var(--honeydew); }
+        .profile-nav-item.active { border-left-color: var(--tomato); color: var(--tomato); background: #fff5f5; }
+        .profile-nav-item + .profile-nav-item { border-top: 1px solid var(--border); }
+
+        .section-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--tomato); margin-bottom: 20px; }
+
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+
+        .order-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 12px; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .order-id { font-weight: 700; font-size: 16px; }
+        .order-date { font-size: 13px; color: var(--text-muted); }
+        .order-total { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--tomato); }
+
+        .favorites-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .fav-card { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .fav-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+        .fav-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .fav-price { color: var(--tomato); font-weight: 600; margin-bottom: 8px; }
+        .fav-remove { font-size: 12px; color: var(--text-muted); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; }
+        .fav-remove:hover { color: var(--tomato); }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
+    <ul class="navbar-links">
+        <li><a href="/index.html">Главная</a></li>
+        <li><a href="/catalog.html">Каталог</a></li>
+        <li><a href="/customer-login.html" id="profile-link">Войти</a></li>
+    </ul>
+    <div>
+        <a href="/cart.html" class="cart-btn">
+            🛒 Корзина
+            <span class="cart-count" id="cart-count">0</span>
+        </a>
+    </div>
+</nav>
+
+<div class="profile-layout">
+    <!-- SIDEBAR -->
+    <div class="profile-sidebar">
+        <div class="profile-card">
+            <div class="profile-avatar" id="profile-avatar">?</div>
+            <div class="profile-name" id="profile-name">Загрузка...</div>
+            <div class="profile-email" id="profile-email"></div>
+            <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" onclick="customerLogout()">Выйти</button>
+        </div>
+
+        <div class="profile-nav">
+            <div class="profile-nav-item active" onclick="showTab('orders')">📦 История заказов</div>
+            <div class="profile-nav-item" onclick="showTab('data')">👤 Личные данные</div>
+            <div class="profile-nav-item" onclick="showTab('favorites')">❤️ Избранное</div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div>
+        <!-- ORDERS -->
+        <div class="tab-section active" id="tab-orders">
+            <div class="section-title">История заказов</div>
+            <div id="orders-list">Загрузка...</div>
+        </div>
+
+        <!-- DATA -->
+        <div class="tab-section" id="tab-data">
+            <div class="section-title">Личные данные</div>
+            <div class="card" style="max-width:480px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group">
+                        <label class="form-label">Имя</label>
+                        <input class="form-control" id="edit-firstname">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия</label>
+                        <input class="form-control" id="edit-lastname">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" id="edit-email" disabled style="background:#f5f5f5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Телефон</label>
+                    <input class="form-control" id="edit-phone">
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()">Сохранить изменения</button>
+            </div>
+        </div>
+
+        <!-- FAVORITES -->
+        <div class="tab-section" id="tab-favorites">
+            <div class="section-title">Избранное</div>
+            <div id="favorites-list">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const token = localStorage.getItem('customer_token');
+    if (!token) window.location.href = '/customer-login.html';
+
+    const categoryIcons = {
+        'Гитары': '🎸', 'Клавишные': '🎹', 'Ударные': '🥁',
+        'Аксессуары': '🎵', 'Акустические': '🪕', 'Электрогитары': '⚡',
+        'Синтезаторы': '🎛️', 'Пианино': '🎹'
+    };
+
+    const statusLabels = {
+        NEW: 'Новый', IN_PROGRESS: 'В работе', PAID: 'Оплачен',
+        SHIPPED: 'Отправлен', DELIVERED: 'Доставлен', CANCELLED: 'Отменён'
+    };
+
+    function updateCartCount() {
+        const count = JSON.parse(localStorage.getItem('cart') || '[]').reduce((s,i) => s+i.quantity, 0);
+        document.getElementById('cart-count').textContent = count;
+    }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function showTab(tab) {
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.profile-nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function customerLogout() {
+        localStorage.removeItem('customer_token');
+        localStorage.removeItem('customer_email');
+        window.location.href = '/index.html';
+    }
+
+    async function apiGet(path) {
+        const res = await fetch('http://localhost:8080' + path, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Ошибка запроса');
+        return res.json();
+    }
+
+    async function apiPut(path, body) {
+        const res = await fetch('http://localhost:8080' + path, {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Ошибка запроса');
+        return res.json();
+    }
+
+    async function apiDelete(path) {
+        await fetch('http://localhost:8080' + path, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+    }
+
+    async function loadProfile() {
+        const profile = await apiGet('/api/customer-auth/profile');
+        const initials = (profile.firstName?.[0] || '') + (profile.lastName?.[0] || '');
+        document.getElementById('profile-avatar').textContent = initials;
+        document.getElementById('profile-name').textContent = `${profile.firstName} ${profile.lastName}`;
+        document.getElementById('profile-email').textContent = profile.email;
+        document.getElementById('edit-firstname').value = profile.firstName;
+        document.getElementById('edit-lastname').value = profile.lastName;
+        document.getElementById('edit-email').value = profile.email;
+        document.getElementById('edit-phone').value = profile.phone || '';
+    }
+
+    async function loadOrders() {
+        const orders = await apiGet('/api/customer-auth/orders');
+        if (!orders.length) {
+            document.getElementById('orders-list').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <div>Заказов пока нет</div>
+                <a href="/catalog.html" class="btn btn-primary" style="margin-top:16px;display:inline-flex">Перейти в каталог</a>
+            </div>`;
+            return;
+        }
+
+        document.getElementById('orders-list').innerHTML = orders.reverse().map(o => `
+  <div class="order-card">
+    <div class="order-header">
+      <div>
+        <div class="order-id">Заказ #${o.id}</div>
+        <div class="order-date">${new Date(o.orderDate).toLocaleDateString('ru', {day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="order-total">${Number(o.totalAmount).toLocaleString('ru')} ₽</div>
+        <span class="badge badge-${o.status?.toLowerCase()}">${statusLabels[o.status] || o.status}</span>
+      </div>
+    </div>
+
+    <!-- Список товаров -->
+    <div style="margin: 12px 0; display: flex; flex-direction: column; gap: 6px;">
+      ${(o.items || []).map(item => `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+          <span>${item.product?.name || 'Товар'}</span>
+          <span style="color:var(--text-muted)">${item.quantity} шт. × ${Number(item.unitPrice).toLocaleString('ru')} ₽</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="font-size:13px;color:var(--text-muted);padding-top:8px;">
+      🏪 Самовывоз из магазина
+    </div>
+  </div>
+`).join('');
+    }
+
+    async function loadFavorites() {
+        const favorites = await apiGet('/api/customer-auth/favorites');
+        if (!favorites.length) {
+            document.getElementById('favorites-list').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">❤️</div>
+                <div>Избранных товаров нет</div>
+                <a href="/catalog.html" class="btn btn-primary" style="margin-top:16px;display:inline-flex">Смотреть каталог</a>
+            </div>`;
+            return;
+        }
+
+        document.getElementById('favorites-list').innerHTML = `
+        <div class="favorites-grid">
+            ${favorites.map(f => `
+                <div class="fav-card">
+                    <div class="fav-icon">${categoryIcons[f.product?.category?.name] || '🎵'}</div>
+                    <div class="fav-name">${f.product?.name}</div>
+                    <div class="fav-price">${Number(f.product?.price).toLocaleString('ru')} ₽</div>
+                    <div style="display:flex;gap:8px">
+                        <a href="/product.html?id=${f.product?.id}" class="btn btn-secondary btn-sm">Смотреть</a>
+                        <button class="fav-remove btn btn-danger btn-sm" onclick="removeFavorite(${f.product?.id})">✕</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+
+    async function saveProfile() {
+        const body = {
+            firstName: document.getElementById('edit-firstname').value,
+            lastName: document.getElementById('edit-lastname').value,
+            phone: document.getElementById('edit-phone').value,
+            email: document.getElementById('edit-email').value,
+            password: ''
+        };
+        await apiPut('/api/customer-auth/profile', body);
+        showToast('Данные сохранены', 'success');
+        loadProfile();
+    }
+
+    async function removeFavorite(productId) {
+        await apiDelete(`/api/customer-auth/favorites/${productId}`);
+        showToast('Удалено из избранного');
+        loadFavorites();
+    }
+
+    updateCartCount();
+    loadProfile();
+    loadOrders();
+    loadFavorites();
+</script>
+</body>
+</html>

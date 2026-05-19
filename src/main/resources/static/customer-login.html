@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Вход</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background: var(--honeydew); min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
+        .navbar-links { display: flex; gap: 32px; list-style: none; }
+        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; }
+        .navbar-links a:hover { color: var(--tomato); }
+        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+
+        .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
+
+        .auth-card { background: white; border-radius: 24px; padding: 48px; width: 480px; box-shadow: 0 8px 40px rgba(201,54,56,0.12); border: 1px solid var(--border); }
+
+        .auth-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--tomato); margin-bottom: 4px; }
+        .auth-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+        .user-type-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+        }
+
+        .user-type-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            border-radius: 6px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .user-type-tab.active { background: var(--tomato); color: white; }
+
+        .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 4px; }
+        .auth-tab { flex: 1; padding: 8px; border: none; background: none; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; border-radius: 6px; transition: all 0.2s; color: var(--text-muted); }
+        .auth-tab.active { background: var(--peach); color: var(--text); }
+
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+
+        .user-section { display: none; }
+        .user-section.active { display: block; }
+
+        .error-msg { background: #fee2e2; color: var(--tomato); padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: none; }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
+    <ul class="navbar-links">
+        <li><a href="/index.html">Главная</a></li>
+        <li><a href="/catalog.html">Каталог</a></li>
+    </ul>
+    <div>
+        <a href="/cart.html" class="cart-btn">
+            🛒 Корзина
+            <span class="cart-count" id="cart-count">0</span>
+        </a>
+    </div>
+</nav>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-title">Добро пожаловать</div>
+        <div class="auth-sub">Выберите тип аккаунта для входа</div>
+
+        <!-- Тип пользователя -->
+        <div class="user-type-tabs">
+            <button class="user-type-tab active" onclick="switchUserType('customer')">🛍️ Покупатель</button>
+            <button class="user-type-tab" onclick="switchUserType('employee')">👔 Сотрудник</button>
+        </div>
+
+        <!-- ПОКУПАТЕЛЬ -->
+        <div class="user-section active" id="section-customer">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Войти</button>
+                <button class="auth-tab" onclick="switchTab('register')">Регистрация</button>
+            </div>
+
+            <!-- Вход покупателя -->
+            <div class="auth-form active" id="form-login">
+                <div class="error-msg" id="login-error"></div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" id="login-email" type="email" placeholder="ivan@mail.ru">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div style="position:relative">
+                        <input class="form-control" id="login-password" type="password" placeholder="••••••••">
+                        <button onclick="togglePass('login-password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:16px">👁</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="customerLogin()">Войти</button>
+            </div>
+
+            <!-- Регистрация покупателя -->
+            <div class="auth-form" id="form-register">
+                <div class="error-msg" id="register-error"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group">
+                        <label class="form-label">Имя</label>
+                        <input class="form-control" id="reg-firstname" placeholder="Иван">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия</label>
+                        <input class="form-control" id="reg-lastname" placeholder="Иванов">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-control" id="reg-email" type="email" placeholder="ivan@mail.ru">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Телефон</label>
+                    <input class="form-control" id="reg-phone" placeholder="+79001234567">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div style="position:relative">
+                        <input class="form-control" id="reg-password" type="password" placeholder="••••••••">
+                        <button onclick="togglePass('reg-password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:16px">👁</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="customerRegister()">Создать аккаунт</button>
+            </div>
+        </div>
+
+        <!-- СОТРУДНИК -->
+        <div class="user-section" id="section-employee">
+            <div class="error-msg" id="employee-error"></div>
+            <div class="form-group">
+                <label class="form-label">Email сотрудника</label>
+                <input class="form-control" id="emp-email" type="email" placeholder="admin@swagsound.ru">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Пароль</label>
+                <div style="position:relative">
+                    <input class="form-control" id="emp-password" type="password" placeholder="••••••••">
+                    <button onclick="togglePass('emp-password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:16px">👁</button>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="employeeLogin()">Войти в панель управления</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // Редиректы если уже вошли
+    if (localStorage.getItem('customer_token')) window.location.href = '/profile.html';
+    if (localStorage.getItem('token') && localStorage.getItem('token') !== 'null') window.location.href = '/dashboard.html';
+
+    function updateCartCount() {
+        const count = JSON.parse(localStorage.getItem('cart') || '[]').reduce((s,i) => s+i.quantity, 0);
+        document.getElementById('cart-count').textContent = count;
+    }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function togglePass(id, btn) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.textContent = input.type === 'password' ? '👁' : '🙈';
+    }
+
+    function switchUserType(type) {
+        document.querySelectorAll('.user-type-tab').forEach((t, i) => {
+            t.classList.toggle('active', (i === 0 && type === 'customer') || (i === 1 && type === 'employee'));
+        });
+        document.getElementById('section-customer').classList.toggle('active', type === 'customer');
+        document.getElementById('section-employee').classList.toggle('active', type === 'employee');
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach((t, i) => {
+            t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+        });
+        document.getElementById('form-login').classList.toggle('active', tab === 'login');
+        document.getElementById('form-register').classList.toggle('active', tab === 'register');
+    }
+
+    async function customerLogin() {
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errorEl = document.getElementById('login-error');
+        errorEl.style.display = 'none';
+
+        if (!email || !password) { errorEl.textContent = 'Заполните все поля'; errorEl.style.display = 'block'; return; }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/customer-auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            if (!res.ok) { errorEl.textContent = 'Неверный email или пароль'; errorEl.style.display = 'block'; return; }
+            const data = await res.json();
+            localStorage.setItem('customer_token', data.token);
+            localStorage.setItem('customer_email', data.email);
+            showToast('Добро пожаловать!', 'success');
+            setTimeout(() => window.location.href = '/profile.html', 1000);
+        } catch (e) {
+            errorEl.textContent = 'Ошибка подключения'; errorEl.style.display = 'block';
+        }
+    }
+
+    async function customerRegister() {
+        const firstName = document.getElementById('reg-firstname').value.trim();
+        const lastName = document.getElementById('reg-lastname').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const errorEl = document.getElementById('register-error');
+        errorEl.style.display = 'none';
+
+        if (!firstName || !lastName || !email || !password) { errorEl.textContent = 'Заполните все поля'; errorEl.style.display = 'block'; return; }
+        if (password.length < 6) { errorEl.textContent = 'Пароль минимум 6 символов'; errorEl.style.display = 'block'; return; }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/customer-auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firstName, lastName, email, phone, password })
+            });
+            if (!res.ok) { errorEl.textContent = 'Email уже зарегистрирован'; errorEl.style.display = 'block'; return; }
+            const data = await res.json();
+            localStorage.setItem('customer_token', data.token);
+            localStorage.setItem('customer_email', data.email);
+            showToast('Аккаунт создан!', 'success');
+            setTimeout(() => window.location.href = '/profile.html', 1000);
+        } catch (e) {
+            errorEl.textContent = 'Ошибка подключения'; errorEl.style.display = 'block';
+        }
+    }
+
+    async function employeeLogin() {
+        const email = document.getElementById('emp-email').value.trim();
+        const password = document.getElementById('emp-password').value;
+        const errorEl = document.getElementById('employee-error');
+        errorEl.style.display = 'none';
+
+        if (!email || !password) { errorEl.textContent = 'Заполните все поля'; errorEl.style.display = 'block'; return; }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            if (!res.ok) { errorEl.textContent = 'Неверный email или пароль'; errorEl.style.display = 'block'; return; }
+            const data = await res.json();
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('email', data.email);
+            localStorage.setItem('role', data.role);
+            showToast('Добро пожаловать!', 'success');
+            setTimeout(() => window.location.href = '/dashboard.html', 1000);
+        } catch (e) {
+            errorEl.textContent = 'Ошибка подключения'; errorEl.style.display = 'block';
+        }
+    }
+
+    updateCartCount();
+</script>
+</body>
+</html>

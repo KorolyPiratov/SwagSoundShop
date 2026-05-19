@@ -130,6 +130,10 @@
     checkAuth();
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
 
+    const canEditProducts = hasRole('ADMIN', 'MANAGER');
+    if (!canEditProducts) {
+        document.querySelector('button[onclick="openModal()"]').style.display = 'none';
+    }
     let categories = [];
 
     function showToast(msg, type = 'success') {
@@ -182,8 +186,9 @@
             </td>
             <td>
                 <div style="display:flex;gap:8px">
-                    <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">Изменить</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Удалить</button>
+                    ${canEditProducts ? `<button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">Изменить</button>` : ''}
+                    ${canEditProducts ? `<button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Удалить</button>` : ''}
+                    ${!canEditProducts ? '<span style="color:var(--text-muted);font-size:13px">Только просмотр</span>' : ''}
                 </div>
             </td>
         </tr>

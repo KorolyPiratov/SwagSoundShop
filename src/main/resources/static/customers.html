@@ -113,7 +113,10 @@
 <script>
     checkAuth();
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
-
+    const canEditCustomers = hasRole('ADMIN', 'MANAGER');
+    if (!canEditCustomers) {
+        document.querySelector('button[onclick="openModal()"]').style.display = 'none';
+    }
     let allCustomers = [];
 
     function showToast(msg, type = 'success') {
@@ -151,8 +154,9 @@
             <td style="color:var(--text-muted);font-size:13px">${new Date(c.createdAt).toLocaleDateString('ru')}</td>
             <td>
                 <div style="display:flex;gap:8px">
-                    <button class="btn btn-secondary btn-sm" onclick="editCustomer(${c.id})">Изменить</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCustomer(${c.id})">Удалить</button>
+                    ${canEditCustomers ? `<button class="btn btn-secondary btn-sm" onclick="editCustomer(${c.id})">Изменить</button>` : ''}
+                    ${canEditCustomers ? `<button class="btn btn-danger btn-sm" onclick="deleteCustomer(${c.id})">Удалить</button>` : ''}
+                    ${!canEditCustomers ? '<span style="color:var(--text-muted);font-size:13px">Только просмотр</span>' : ''}
                 </div>
             </td>
         </tr>

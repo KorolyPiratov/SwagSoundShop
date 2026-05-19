@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/customer-auth/register", "/api/customer-auth/login").permitAll()
                         .requestMatchers("/", "/*.html", "/*.css", "/*.js", "/favicon.ico").permitAll()
                         .requestMatchers("/api/products/**", "/api/categories/**").permitAll()
                         .requestMatchers("/api/customers/public", "/api/orders/public").permitAll()
