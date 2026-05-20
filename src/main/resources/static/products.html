@@ -151,7 +151,12 @@
         categories = await get('/categories') || [];
         const sel = document.getElementById('filter-category');
         const sel2 = document.getElementById('product-category');
-        categories.forEach(c => {
+
+        const leafCats = categories.filter(c =>
+            !categories.some(ch => ch.parent?.id === c.id)
+        );
+
+        leafCats.forEach(c => {
             sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
             sel2.innerHTML += `<option value="${c.id}">${c.name}</option>`;
         });
@@ -225,11 +230,11 @@
             name: document.getElementById('product-name').value,
             description: document.getElementById('product-desc').value,
             price: parseFloat(document.getElementById('product-price').value),
-            stockQuantity: parseInt(document.getElementById('product-stock').value),
+            stockQuantity: parseInt(document.getElementById('product-stock').value) || 0,
             categoryId: parseInt(document.getElementById('product-category').value)
         };
 
-        if (!body.name || !body.price || !body.categoryId) {
+        if (!body.name || !body.price || !body.categoryId || isNaN(parseInt(document.getElementById('product-stock').value))) {
             showToast('Заполните все обязательные поля', 'error');
             return;
         }

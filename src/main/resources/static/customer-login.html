@@ -7,14 +7,6 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         body { background: var(--honeydew); min-height: 100vh; display: flex; flex-direction: column; }
-        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
-        .navbar-links { display: flex; gap: 32px; list-style: none; }
-        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; }
-        .navbar-links a:hover { color: var(--tomato); }
-        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
-        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-
         .auth-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
 
         .auth-card { background: white; border-radius: 24px; padding: 48px; width: 480px; box-shadow: 0 8px 40px rgba(201,54,56,0.12); border: 1px solid var(--border); }
@@ -65,20 +57,6 @@
     </style>
 </head>
 <body>
-
-<nav class="navbar">
-    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
-    <ul class="navbar-links">
-        <li><a href="/index.html">Главная</a></li>
-        <li><a href="/catalog.html">Каталог</a></li>
-    </ul>
-    <div>
-        <a href="/cart.html" class="cart-btn">
-            🛒 Корзина
-            <span class="cart-count" id="cart-count">0</span>
-        </a>
-    </div>
-</nav>
 
 <div class="auth-container">
     <div class="auth-card">
@@ -281,8 +259,7 @@
             localStorage.setItem('email', data.email);
             localStorage.setItem('role', data.role);
             showToast('Добро пожаловать!', 'success');
-            alert('token: ' + localStorage.getItem('token') + '\nrole: ' + localStorage.getItem('role'));
-            setTimeout(() => window.location.href = '/dashboard.html', 5000);
+            setTimeout(() => window.location.href = '/dashboard.html', 1000);
         } catch (e) {
             errorEl.textContent = 'Ошибка подключения'; errorEl.style.display = 'block';
         }

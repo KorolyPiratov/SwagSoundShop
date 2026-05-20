@@ -5,16 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwagSoundShop — Профиль</title>
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body { background: var(--honeydew); }
-        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
-        .navbar-links { display: flex; gap: 32px; list-style: none; }
-        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; }
-        .navbar-links a:hover { color: var(--tomato); }
-        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
-        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-        .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; padding: 40px 48px; }
+        .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; padding: 40px 48px; margin-top: 68px; }
         .profile-sidebar { height: fit-content; position: sticky; top: 84px; }
         .profile-card { background: white; border-radius: var(--radius); padding: 32px 24px; box-shadow: var(--shadow); border: 1px solid var(--border); text-align: center; margin-bottom: 16px; }
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--coral), var(--tomato)); display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; font-family: 'Playfair Display', serif; margin: 0 auto 16px; }
@@ -38,8 +32,6 @@
         .fav-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
         .fav-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
         .fav-price { color: var(--tomato); font-weight: 600; margin-bottom: 8px; }
-
-        /* Карты */
         .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
         .card-item { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; border-radius: 16px; padding: 24px; position: relative; overflow: hidden; min-height: 140px; display: flex; flex-direction: column; justify-content: space-between; }
         .card-item::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.05); }
@@ -56,11 +48,8 @@
         .card-expiry { font-size: 14px; font-weight: 600; text-align: right; }
         .card-delete-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.15); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
         .card-delete-btn:hover { background: rgba(255,0,0,0.4); }
-
         .add-card-form { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); max-width: 480px; }
         .add-card-title { font-weight: 600; font-size: 16px; margin-bottom: 16px; }
-        .card-input { font-family: 'DM Sans', sans-serif; }
-
         .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { background: #16a34a; }
@@ -70,20 +59,7 @@
 </head>
 <body>
 
-<nav class="navbar">
-    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
-    <ul class="navbar-links">
-        <li><a href="/index.html">Главная</a></li>
-        <li><a href="/catalog.html">Каталог</a></li>
-        <li><a href="/customer-login.html" id="profile-link">Войти</a></li>
-    </ul>
-    <div>
-        <a href="/cart.html" class="cart-btn">
-            🛒 Корзина
-            <span class="cart-count" id="cart-count">0</span>
-        </a>
-    </div>
-</nav>
+<script src="/navbar.js"></script>
 
 <div class="profile-layout">
     <div class="profile-sidebar">
@@ -102,13 +78,11 @@
     </div>
 
     <div>
-        <!-- ORDERS -->
         <div class="tab-section active" id="tab-orders">
             <div class="section-title">История заказов</div>
             <div id="orders-list">Загрузка...</div>
         </div>
 
-        <!-- DATA -->
         <div class="tab-section" id="tab-data">
             <div class="section-title">Личные данные</div>
             <div class="card" style="max-width:480px">
@@ -134,7 +108,6 @@
             </div>
         </div>
 
-        <!-- CARDS -->
         <div class="tab-section" id="tab-cards">
             <div class="section-title">Мои карты</div>
             <div id="cards-list">Загрузка...</div>
@@ -142,28 +115,27 @@
                 <div class="add-card-title">➕ Добавить карту</div>
                 <div class="form-group">
                     <label class="form-label">Номер карты</label>
-                    <input class="form-control card-input" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNumber(this)">
+                    <input class="form-control" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNumber(this)">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Имя владельца</label>
-                    <input class="form-control card-input" id="card-holder" placeholder="IVAN IVANOV"
+                    <input class="form-control" id="card-holder" placeholder="IVAN IVANOV"
                            oninput="this.value=this.value.replace(/[^a-zA-Z\s]/g,'').toUpperCase()">
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                     <div class="form-group">
                         <label class="form-label">Срок действия</label>
-                        <input class="form-control card-input" id="card-expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+                        <input class="form-control" id="card-expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
                     </div>
                     <div class="form-group">
                         <label class="form-label">CVV</label>
-                        <input class="form-control card-input" id="card-cvv" placeholder="•••" maxlength="3" type="password">
+                        <input class="form-control" id="card-cvv" placeholder="•••" maxlength="3" type="password">
                     </div>
                 </div>
                 <button class="btn btn-primary" onclick="addCard()">Сохранить карту</button>
             </div>
         </div>
 
-        <!-- FAVORITES -->
         <div class="tab-section" id="tab-favorites">
             <div class="section-title">Избранное</div>
             <div id="favorites-list">Загрузка...</div>
@@ -188,11 +160,6 @@
         NEW: 'Новый', IN_PROGRESS: 'В работе', PAID: 'Оплачен',
         SHIPPED: 'Отправлен', DELIVERED: 'Доставлен', CANCELLED: 'Отменён'
     };
-
-    function updateCartCount() {
-        const count = JSON.parse(localStorage.getItem('cart') || '[]').reduce((s,i) => s+i.quantity, 0);
-        document.getElementById('cart-count').textContent = count;
-    }
 
     function showToast(msg, type = 'success') {
         const t = document.getElementById('toast');
@@ -350,11 +317,9 @@
         const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
         const holderName = document.getElementById('card-holder').value.trim();
         const expiry = document.getElementById('card-expiry').value.trim();
-
         if (cardNumber.length < 16) { showToast('Введите корректный номер карты', 'error'); return; }
         if (!holderName) { showToast('Введите имя владельца', 'error'); return; }
         if (expiry.length < 5) { showToast('Введите срок действия', 'error'); return; }
-
         try {
             await apiPost('/api/customer-auth/cards', { cardNumber, holderName, expiry });
             showToast('Карта добавлена', 'success');
@@ -428,12 +393,6 @@
         }
     }
 
-    if (localStorage.getItem('customer_token')) {
-        document.getElementById('profile-link').textContent = 'Профиль';
-        document.getElementById('profile-link').href = '/profile.html';
-    }
-
-    updateCartCount();
     loadProfile();
     loadOrders();
     loadCards();

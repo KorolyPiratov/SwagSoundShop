@@ -5,17 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwagSoundShop — Товар</title>
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body { background: var(--honeydew); }
-        .navbar { background: white; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .navbar-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--tomato); text-decoration: none; }
-        .navbar-links { display: flex; gap: 32px; list-style: none; }
-        .navbar-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; transition: color 0.2s; }
-        .navbar-links a:hover { color: var(--tomato); }
-        .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s; }
-        .cart-btn:hover { background: #b02e30; }
-        .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-        .breadcrumbs { padding: 24px 48px 0; font-size: 13px; color: var(--text-muted); }
+        .breadcrumbs { padding: 24px 48px 0; font-size: 13px; color: var(--text-muted); margin-top: 68px; }
         .breadcrumbs a { color: var(--coral); text-decoration: none; transition: color 0.2s; }
         .breadcrumbs a:hover { color: var(--tomato); }
         .product-container { max-width: 1200px; margin: 40px auto; padding: 0 48px; }
@@ -73,20 +66,8 @@
     </style>
 </head>
 <body>
-<nav class="navbar">
-    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
-    <ul class="navbar-links">
-        <li><a href="/index.html">Главная</a></li>
-        <li><a href="/catalog.html">Каталог</a></li>
-        <li><a href="/customer-login.html" id="profile-link">Войти</a></li>
-    </ul>
-    <div>
-        <a href="/cart.html" class="cart-btn">
-            🛒 Корзина
-            <span class="cart-count" id="cart-count">0</span>
-        </a>
-    </div>
-</nav>
+
+<script src="/navbar.js"></script>
 
 <div class="breadcrumbs" id="breadcrumbs">
     <a href="/index.html">Главная</a> /
@@ -120,11 +101,7 @@
     }
 
     function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
-    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); updateCartCount(); }
-    function updateCartCount() {
-        const count = getCart().reduce((s, i) => s + i.quantity, 0);
-        document.getElementById('cart-count').textContent = count;
-    }
+    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
 
     function showToast(msg, type = 'success') {
         const t = document.getElementById('toast');
@@ -133,7 +110,6 @@
         setTimeout(() => t.className = 'toast', 3000);
     }
 
-    // ── Избранное ──────────────────────────────────────────────
     async function loadFavoriteStatus(productId) {
         if (!customerToken) return;
         try {
@@ -179,7 +155,6 @@
             showToast('Ошибка', 'error');
         }
     }
-    // ──────────────────────────────────────────────────────────
 
     function addToCart() {
         if (!currentProduct || quantity < 1) return;
@@ -217,7 +192,6 @@
             if (!response.ok) throw new Error('Товар не найден');
             currentProduct = await response.json();
             renderProduct();
-            updateCartCount();
         } catch (error) {
             document.getElementById('product-content').innerHTML = `<div class="loading">Ошибка: ${error.message}</div>`;
         }
@@ -290,13 +264,7 @@
             </div>
         `;
 
-        // Загружаем статус избранного с сервера
         loadFavoriteStatus(p.id);
-    }
-
-    if (customerToken) {
-        document.getElementById('profile-link').textContent = 'Профиль';
-        document.getElementById('profile-link').href = '/profile.html';
     }
 
     loadProduct();
