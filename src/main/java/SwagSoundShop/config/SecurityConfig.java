@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/customer-auth/register", "/api/customer-auth/login").permitAll()
                         .requestMatchers("/api/customer-auth/**").hasRole("CUSTOMER")
+                        .requestMatchers("/", "/*.html", "/*.css", "/*.js", "/favicon.ico", "/uploads/**").permitAll()
                         .requestMatchers("/", "/*.html", "/*.css", "/*.js", "/favicon.ico").permitAll()
                         .requestMatchers("/api/products/**", "/api/categories/**").permitAll()
                         .requestMatchers("/api/customers/public", "/api/orders/public").permitAll()

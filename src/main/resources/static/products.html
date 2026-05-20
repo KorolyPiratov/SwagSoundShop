@@ -74,7 +74,7 @@
                     <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Название</th>
+                        <th>Товар</th>
                         <th>Категория</th>
                         <th>Цена</th>
                         <th>Остаток</th>
@@ -115,6 +115,16 @@
             <label class="form-label">Категория</label>
             <select class="form-control" id="product-category"></select>
         </div>
+        <div class="form-group">
+            <label class="form-label">Фото товара</label>
+            <div id="image-preview" style="width:100%;height:160px;background:linear-gradient(135deg,var(--honeydew),var(--peach));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:8px;border:2px dashed var(--border);overflow:hidden">
+                🎵
+            </div>
+            <input type="file" id="product-image" accept="image/*" style="display:none" onchange="previewImage(this)">
+            <button type="button" class="btn btn-secondary" style="width:100%;margin-bottom:0" onclick="document.getElementById('product-image').click()">
+                📷 Выбрать фото
+            </button>
+        </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
             <button class="btn btn-primary" onclick="saveProduct()">Сохранить</button>
@@ -138,6 +148,7 @@
     if (!canEditProducts) {
         document.querySelector('button[onclick="openModal()"]').style.display = 'none';
     }
+
     let categories = [];
 
     function showToast(msg, type = 'success') {
@@ -147,15 +158,22 @@
         setTimeout(() => t.className = 'toast', 3000);
     }
 
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const preview = document.getElementById('image-preview');
+                preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
     async function loadCategories() {
         categories = await get('/categories') || [];
         const sel = document.getElementById('filter-category');
         const sel2 = document.getElementById('product-category');
-
-        const leafCats = categories.filter(c =>
-            !categories.some(ch => ch.parent?.id === c.id)
-        );
-
+        const leafCats = categories.filter(c => !categories.some(ch => ch.parent?.id === c.id));
         leafCats.forEach(c => {
             sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
             sel2.innerHTML += `<option value="${c.id}">${c.name}</option>`;
@@ -178,21 +196,29 @@
         const tbody = document.getElementById('products-table');
 
         if (!products.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Товары не найдены</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Товары не найдены</td></tr>';
             return;
         }
 
         tbody.innerHTML = products.map(p => `
         <tr>
             <td style="color:var(--text-muted)">#${p.id}</td>
-            <td><strong>${p.name}</strong><br><span style="font-size:12px;color:var(--text-muted)">${p.description || ''}</span></td>
+            <td>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,var(--honeydew),var(--peach));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">
+                        ${p.imageUrl ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎵'}
+                    </div>
+                    <div>
+                        <strong>${p.name}</strong><br>
+                        <span style="font-size:12px;color:var(--text-muted)">${p.description || ''}</span>
+                    </div>
+                </div>
+            </td>
             <td>${p.category?.name || '—'}</td>
             <td><strong>${Number(p.price).toLocaleString('ru')} ₽</strong></td>
-            <td>
-                <span style="color:${p.stockQuantity > 0 ? 'var(--text)' : 'var(--tomato)'}">
-                    ${p.stockQuantity} шт.
-                </span>
-            </td>
+            <td><span style="color:${p.stockQuantity > 0 ? 'var(--text)' : 'var(--tomato)'}">
+                ${p.stockQuantity} шт.
+            </span></td>
             <td>
                 <div style="display:flex;gap:8px">
                     ${canEditProducts ? `<button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">Изменить</button>` : ''}
@@ -212,6 +238,15 @@
         document.getElementById('product-price').value = product?.price || '';
         document.getElementById('product-stock').value = product?.stockQuantity || '';
         document.getElementById('product-category').value = product?.category?.id || '';
+        document.getElementById('product-image').value = '';
+
+        const preview = document.getElementById('image-preview');
+        if (product?.imageUrl) {
+            preview.innerHTML = `<img src="${product.imageUrl}" style="width:100%;height:100%;object-fit:cover">`;
+        } else {
+            preview.innerHTML = '🎵';
+        }
+
         document.getElementById('modal').classList.add('open');
     }
 
@@ -234,17 +269,31 @@
             categoryId: parseInt(document.getElementById('product-category').value)
         };
 
-        if (!body.name || !body.price || !body.categoryId || isNaN(parseInt(document.getElementById('product-stock').value))) {
+        if (!body.name || !body.price || !body.categoryId) {
             showToast('Заполните все обязательные поля', 'error');
             return;
         }
 
+        let savedProduct;
         if (id) {
-            await put(`/products/${id}`, body);
+            savedProduct = await put(`/products/${id}`, body);
             showToast('Товар обновлён');
         } else {
-            await post('/products', body);
+            savedProduct = await post('/products', body);
             showToast('Товар добавлен');
+        }
+
+        // Загружаем фото если выбрано
+        const imageFile = document.getElementById('product-image').files[0];
+        if (imageFile && savedProduct?.id) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            await fetch(`http://localhost:8080/api/products/${savedProduct.id}/image`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + getToken() },
+                body: formData
+            });
+            showToast('Фото загружено');
         }
 
         closeModal();

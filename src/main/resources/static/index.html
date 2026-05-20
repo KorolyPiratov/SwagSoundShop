@@ -475,28 +475,38 @@
         const res = await fetch('http://localhost:8080/api/products');
         const products = await res.json();
         document.getElementById('products-grid').innerHTML = products.slice(0, 8).map(p => `
-            <a href="/product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit">
-                <div class="product-card">
-                    <div class="product-img">${categoryIcons[p.category?.name] || '🎵'}</div>
-                    <div class="product-body">
-                        <div class="product-category">${p.category?.name || ''}</div>
-                        <div class="product-name">${p.name}</div>
-                        <div class="product-desc">${p.description || ''}</div>
-                        <div class="product-footer">
-                            <div>
-                                <div class="product-price">${Number(p.price).toLocaleString('ru')} ₽</div>
-                                <div class="product-stock">${p.stockQuantity > 0 ? `В наличии: ${p.stockQuantity} шт.` : 'Нет в наличии'}</div>
-                            </div>
-                            <button class="btn-add-cart"
-                                ${p.stockQuantity === 0 ? 'disabled' : ''}
-                                onclick='event.preventDefault();addToCart(${JSON.stringify({id: p.id, name: p.name, price: p.price})})'>
-                                В корзину
-                            </button>
-                        </div>
-                    </div>
+    <div class="product-card">
+        <a href="/product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit">
+            <div class="product-img">
+                ${p.imageUrl
+            ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover">`
+            : categoryIcons[p.category?.name] || '🎵'
+        }
+            </div>
+        </a>
+        <div class="product-body">
+            <div class="product-category">${p.category?.name || ''}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-desc">${p.description || ''}</div>
+            <div class="product-footer">
+                <div>
+                    <div class="product-price">${Number(p.price).toLocaleString('ru')} ₽</div>
+                    <div class="product-stock">${p.stockQuantity > 0 ? `В наличии: ${p.stockQuantity} шт.` : 'Нет в наличии'}</div>
                 </div>
-            </a>
-        `).join('');
+                <button class="btn-add-cart"
+                    ${p.stockQuantity === 0 ? 'disabled' : ''}
+                    onclick='addToCart(${JSON.stringify({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        stockQuantity: p.stockQuantity
+                    })})'>
+                    В корзину
+                </button>
+            </div>
+        </div>
+    </div>
+`).join('');
     }
 
     if (localStorage.getItem('customer_token')) {
