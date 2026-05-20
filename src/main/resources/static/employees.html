@@ -134,12 +134,15 @@
 <script src="/api.js"></script>
 <script>
     checkAuth();
+    if (hasRole('SELLER')) window.location.href = '/dashboard.html';
+    if (hasRole('SELLER')) window.location.href = '/dashboard.html';
+
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
 
     const isAdmin = hasRole('ADMIN');
 
     if (!isAdmin) {
-        document.querySelector('button[onclick="openModal()"]')?.style.setProperty('display', 'none');
+        document.querySelector('button[onclick="openModal()"]').style.display = 'none';
     }
 
     const roleLabels = { ADMIN: 'Администратор', MANAGER: 'Менеджер', SELLER: 'Продавец' };

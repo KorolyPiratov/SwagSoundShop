@@ -20,7 +20,7 @@ function logout() {
 
 function checkAuth() {
     if (!getToken()) {
-        window.location.href = '/login.html';
+        window.location.href = '/customer-login.html';
     }
 }
 
@@ -42,9 +42,13 @@ async function request(method, path, body = null) {
 
     const res = await fetch(API_BASE + path, options);
 
-    if (res.status === 403 || res.status === 401) {
+    if (res.status === 401) {
         logout();
         return;
+    }
+
+    if (res.status === 403) {
+        return null;
     }
 
     if (res.status === 204) return null;

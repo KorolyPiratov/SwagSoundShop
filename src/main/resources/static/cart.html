@@ -14,11 +14,8 @@
         .navbar-links a:hover { color: var(--tomato); }
         .cart-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--tomato); color: white; border-radius: var(--radius-sm); text-decoration: none; font-size: 14px; font-weight: 500; }
         .cart-count { background: var(--peach); color: var(--text); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-
         .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; padding: 40px 48px; }
-
         .cart-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--tomato); margin-bottom: 24px; }
-
         .cart-item { background: white; border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .cart-item-icon { width: 64px; height: 64px; background: linear-gradient(135deg, var(--honeydew), var(--peach)); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
         .cart-item-info { flex: 1; }
@@ -30,26 +27,38 @@
         .qty-value { font-weight: 600; min-width: 24px; text-align: center; }
         .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; padding: 4px; transition: color 0.2s; }
         .cart-item-remove:hover { color: var(--tomato); }
-
         .order-card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); position: sticky; top: 84px; height: fit-content; }
         .order-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--tomato); margin-bottom: 20px; }
         .order-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
         .order-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 18px; padding-top: 12px; border-top: 2px solid var(--border); margin-top: 12px; }
-
         .order-form { margin-top: 20px; }
-
+        .auth-required-block { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 28px 20px; text-align: center; }
+        .auth-required-icon { font-size: 36px; margin-bottom: 12px; }
+        .auth-required-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+        .auth-required-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+        .auth-btn-group { display: flex; flex-direction: column; gap: 8px; }
         .empty-cart { text-align: center; padding: 80px 20px; }
         .empty-cart-icon { font-size: 64px; margin-bottom: 16px; }
         .empty-cart-title { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--tomato); margin-bottom: 8px; }
         .empty-cart-sub { color: var(--text-muted); margin-bottom: 24px; }
-
+        .card-select-block { margin-top: 12px; display: none; }
+        .card-select-block.visible { display: block; }
+        .saved-card-option { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer; transition: all 0.2s; font-size: 13px; }
+        .saved-card-option:hover { border-color: var(--tomato); background: #fff5f5; }
+        .saved-card-option.selected { border-color: var(--tomato); background: #fff5f5; }
+        .saved-card-option input[type="radio"] { accent-color: var(--tomato); }
+        .card-info { flex: 1; }
+        .card-info-number { font-weight: 600; }
+        .card-info-name { font-size: 11px; color: var(--text-muted); }
+        .new-card-toggle { font-size: 13px; color: var(--tomato); cursor: pointer; font-weight: 500; margin-top: 8px; display: inline-block; }
+        .new-card-form { margin-top: 12px; display: none; }
+        .new-card-form.visible { display: block; }
         .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
         .toast.show { transform: translateY(0); opacity: 1; }
         .toast.success { background: #16a34a; }
     </style>
 </head>
 <body>
-
 <nav class="navbar">
     <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
     <ul class="navbar-links">
@@ -65,18 +74,12 @@
     </div>
 </nav>
 
-<div class="cart-layout" id="cart-layout">
-    <!-- Заполняется JS -->
-</div>
-
+<div class="cart-layout" id="cart-layout"></div>
 <div class="toast" id="toast"></div>
 
 <script>
-    const categoryIcons = {
-        'Гитары': '🎸', 'Клавишные': '🎹', 'Ударные': '🥁',
-        'Аксессуары': '🎵', 'Акустические': '🪕', 'Электрогитары': '⚡',
-        'Синтезаторы': '🎛️', 'Пианино': '🎹'
-    };
+    const customerToken = localStorage.getItem('customer_token');
+    let savedCards = [];
 
     function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
     function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); render(); }
@@ -104,54 +107,66 @@
     }
 
     function removeItem(id) {
-        const cart = getCart().filter(i => i.id !== id);
-        saveCart(cart);
+        saveCart(getCart().filter(i => i.id !== id));
     }
 
-    async function placeOrder() {
-        const cart = getCart();
-        if (!cart.length) return;
+    function onPaymentMethodChange() {
+        const method = document.querySelector('input[name="payment"]:checked')?.value;
+        const cardBlock = document.getElementById('card-select-block');
+        if (cardBlock) cardBlock.classList.toggle('visible', method === 'ONLINE');
+    }
 
-        const firstName = document.getElementById('o-firstname').value.trim();
-        const lastName = document.getElementById('o-lastname').value.trim();
-        const email = document.getElementById('o-email').value.trim();
-        const phone = document.getElementById('o-phone').value.trim();
+    function toggleNewCardForm() {
+        const form = document.getElementById('new-card-form');
+        form.classList.toggle('visible');
+        document.getElementById('new-card-toggle').textContent =
+            form.classList.contains('visible') ? '✕ Отмена' : '+ Ввести новую карту';
+    }
 
-        if (!firstName || !lastName || !email) {
-            showToast('Заполните имя, фамилию и email', 'error');
+    function formatCardNumber(input) {
+        let v = input.value.replace(/\D/g, '').substring(0, 16);
+        input.value = v.replace(/(.{4})/g, '$1 ').trim();
+    }
+
+    function formatExpiry(input) {
+        let v = input.value.replace(/\D/g, '').substring(0, 4);
+        if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2);
+        input.value = v;
+    }
+
+    function selectCard(el) {
+        document.querySelectorAll('.saved-card-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    async function loadSavedCards() {
+        if (!customerToken) return;
+        try {
+            const res = await fetch('http://localhost:8080/api/customer-auth/cards', {
+                headers: { 'Authorization': 'Bearer ' + customerToken }
+            });
+            savedCards = await res.json();
+            renderCardOptions();
+        } catch (e) { savedCards = []; }
+    }
+
+    function renderCardOptions() {
+        const container = document.getElementById('saved-cards-container');
+        if (!container) return;
+        if (!savedCards.length) {
+            container.innerHTML = '<div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Нет сохранённых карт</div>';
             return;
         }
-
-        try {
-            // Создаём или находим клиента
-            const customerRes = await fetch('http://localhost:8080/api/customers/public', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, email, phone })
-            });
-
-            if (!customerRes.ok) throw new Error('Ошибка создания клиента');
-            const customer = await customerRes.json();
-
-            // Создаём заказ
-            const orderRes = await fetch('http://localhost:8080/api/orders/public', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerId: customer.id,
-                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
-                })
-            });
-
-            if (!orderRes.ok) throw new Error('Ошибка создания заказа');
-
-            showToast('Заказ оформлен! Менеджер свяжется с вами.', 'success');
-            localStorage.removeItem('cart');
-            setTimeout(() => window.location.href = '/index.html', 2000);
-
-        } catch (e) {
-            showToast('Ошибка при оформлении заказа: ' + e.message, 'error');
-        }
+        container.innerHTML = savedCards.map((c, i) => `
+            <label class="saved-card-option ${i === 0 ? 'selected' : ''}" onclick="selectCard(this)">
+                <input type="radio" name="saved-card" value="${c.id}" ${i === 0 ? 'checked' : ''}>
+                <span>💳</span>
+                <div class="card-info">
+                    <div class="card-info-number">${c.cardType} •••• ${c.lastFour}</div>
+                    <div class="card-info-name">${c.holderName} · ${c.expiry}</div>
+                </div>
+            </label>
+        `).join('');
     }
 
     function render() {
@@ -160,103 +175,110 @@
 
         if (!cart.length) {
             document.getElementById('cart-layout').innerHTML = `
-            <div class="empty-cart" style="grid-column:1/-1">
-                <div class="empty-cart-icon">🛒</div>
-                <div class="empty-cart-title">Корзина пуста</div>
-                <div class="empty-cart-sub">Добавьте товары из каталога</div>
-                <a href="/catalog.html" class="btn btn-primary">Перейти в каталог</a>
-            </div>
-        `;
+                <div class="empty-cart" style="grid-column:1/-1">
+                    <div class="empty-cart-icon">🛒</div>
+                    <div class="empty-cart-title">Корзина пуста</div>
+                    <div class="empty-cart-sub">Добавьте товары из каталога</div>
+                    <a href="/catalog.html" class="btn btn-primary">Перейти в каталог</a>
+                </div>`;
             return;
         }
 
         const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-        const customerToken = localStorage.getItem('customer_token');
 
         const orderBlock = customerToken ? `
-        <div id="profile-info" style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
-            <span>👤</span>
-            <span id="profile-info-text">Загрузка данных...</span>
-        </div>
-        <div style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
-            🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrderAuth()">
-            Оформить заказ
-        </button>
-    ` : `
-        <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;margin-bottom:16px">
-            <div style="font-size:24px;margin-bottom:8px">👤</div>
-            <div style="font-weight:600;margin-bottom:4px">Войдите для быстрого оформления</div>
-            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Ваши данные подставятся автоматически</div>
-            <a href="/customer-login.html" class="btn btn-primary" style="justify-content:center;width:100%">Войти или зарегистрироваться</a>
-        </div>
-        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:12px">— или оформить как гость —</div>
-        <div class="form-group">
-            <label class="form-label">Имя</label>
-            <input class="form-control" id="o-firstname" placeholder="Иван">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Фамилия</label>
-            <input class="form-control" id="o-lastname" placeholder="Иванов">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-control" id="o-email" type="email" placeholder="ivan@mail.ru">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Телефон</label>
-            <input class="form-control" id="o-phone" placeholder="+79001234567">
-        </div>
-        <div style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
-            🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrderGuest()">
-            Оформить заказ
-        </button>
-    `;
+            <div id="profile-info" style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+                <span>👤</span><span id="profile-info-text">Загрузка данных...</span>
+            </div>
+            <div style="background:var(--honeydew);padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted);margin-bottom:16px">
+                🏪 Самовывоз из магазина. Менеджер свяжется с вами для подтверждения.
+            </div>
+            <div style="margin-bottom:16px">
+                <div style="font-size:13px;font-weight:600;margin-bottom:8px">Способ оплаты</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+                        <input type="radio" name="payment" value="CASH" checked onchange="onPaymentMethodChange()"> 💵 При получении (наличные)
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+                        <input type="radio" name="payment" value="CARD" onchange="onPaymentMethodChange()"> 💳 При получении (карта)
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+                        <input type="radio" name="payment" value="ONLINE" onchange="onPaymentMethodChange()"> 🌐 Онлайн (карта)
+                    </label>
+                </div>
+                <div class="card-select-block" id="card-select-block">
+                    <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px">Выберите карту</div>
+                    <div id="saved-cards-container"></div>
+                    <span class="new-card-toggle" id="new-card-toggle" onclick="toggleNewCardForm()">+ Ввести новую карту</span>
+                    <div class="new-card-form" id="new-card-form">
+                        <div class="form-group" style="margin-top:12px">
+                            <input class="form-control" id="new-card-number" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNumber(this)">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" id="new-card-holder" placeholder="IVAN IVANOV"
+                            oninput="this.value=this.value.replace(/[^a-zA-Z\\s]/g,'').toUpperCase()">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                            <input class="form-control" id="new-card-expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+                            <input class="form-control" id="new-card-cvv" placeholder="CVV" maxlength="3" type="password">
+                        </div>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted)">
+                            <input type="checkbox" id="save-card"> Сохранить карту в профиле
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="placeOrderAuth()">Оформить заказ</button>
+        ` : `
+            <div class="auth-required-block">
+                <div class="auth-required-icon">🔐</div>
+                <div class="auth-required-title">Необходим аккаунт</div>
+                <div class="auth-required-sub">Для оформления заказа нужно войти или создать аккаунт. Это займёт меньше минуты!</div>
+                <div class="auth-btn-group">
+                    <a href="/customer-login.html" class="btn btn-primary" style="justify-content:center">Войти в аккаунт</a>
+                    <a href="/customer-login.html" class="btn btn-secondary" style="justify-content:center">Создать аккаунт</a>
+                </div>
+            </div>
+        `;
 
         document.getElementById('cart-layout').innerHTML = `
-        <div>
-            <div class="cart-title">Корзина (${cart.length})</div>
-            ${cart.map(item => `
-                <div class="cart-item">
-                    <div class="cart-item-icon">🎵</div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${Number(item.price).toLocaleString('ru')} ₽</div>
+            <div>
+                <div class="cart-title">Корзина (${cart.length})</div>
+                ${cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-icon">🎵</div>
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${Number(item.price).toLocaleString('ru')} ₽</div>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                            <span class="qty-value">${item.quantity}</span>
+                            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                        </div>
+                        <button class="cart-item-remove" onclick="removeItem(${item.id})">✕</button>
                     </div>
-                    <div class="cart-item-controls">
-                        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
-                        <span class="qty-value">${item.quantity}</span>
-                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
-                    </div>
-                    <button class="cart-item-remove" onclick="removeItem(${item.id})">✕</button>
-                </div>
-            `).join('')}
-        </div>
+                `).join('')}
+            </div>
+            <div class="order-card">
+                <div class="order-title">Оформление заказа</div>
+                <div class="order-row"><span>Товаров:</span><span>${cart.reduce((s,i)=>s+i.quantity,0)} шт.</span></div>
+                <div class="order-total"><span>Итого:</span><span>${Number(total).toLocaleString('ru')} ₽</span></div>
+                <div class="order-form">${orderBlock}</div>
+            </div>
+        `;
 
-        <div class="order-card">
-            <div class="order-title">Оформление заказа</div>
-            <div class="order-row"><span>Товаров:</span><span>${cart.reduce((s,i)=>s+i.quantity,0)} шт.</span></div>
-            <div class="order-total"><span>Итого:</span><span>${Number(total).toLocaleString('ru')} ₽</span></div>
-            <div class="order-form">${orderBlock}</div>
-        </div>
-    `;
-
-        // Если вошёл — загружаем данные профиля
-        if (customerToken) loadProfileInfo();
+        if (customerToken) { loadProfileInfo(); loadSavedCards(); }
     }
 
     async function loadProfileInfo() {
         try {
             const res = await fetch('http://localhost:8080/api/customer-auth/profile', {
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('customer_token') }
+                headers: { 'Authorization': 'Bearer ' + customerToken }
             });
             const profile = await res.json();
             document.getElementById('profile-info-text').textContent =
                 `${profile.firstName} ${profile.lastName} · ${profile.email}`;
-            // Сохраняем данные профиля для использования при заказе
             window._customerProfile = profile;
         } catch (e) {
             document.getElementById('profile-info-text').textContent = 'Ошибка загрузки профиля';
@@ -269,19 +291,58 @@
         const profile = window._customerProfile;
         if (!profile) { showToast('Ошибка загрузки профиля', 'error'); return; }
 
+        const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'CASH';
+
+        if (paymentMethod === 'ONLINE') {
+            const newCardForm = document.getElementById('new-card-form');
+            const isNewCard = newCardForm?.classList.contains('visible');
+
+            if (isNewCard) {
+                const cardNumber = document.getElementById('new-card-number').value.replace(/\s/g, '');
+                const holderName = document.getElementById('new-card-holder').value.trim();
+                const expiry = document.getElementById('new-card-expiry').value.trim();
+                const saveCard = document.getElementById('save-card').checked;
+
+                if (cardNumber.length < 16) { showToast('Введите корректный номер карты', 'error'); return; }
+                if (!holderName) { showToast('Введите имя владельца', 'error'); return; }
+                if (expiry.length < 5) { showToast('Введите срок действия', 'error'); return; }
+
+                if (saveCard) {
+                    try {
+                        await fetch('http://localhost:8080/api/customer-auth/cards', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + customerToken, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cardNumber, holderName, expiry })
+                        });
+                    } catch (e) {}
+                }
+            } else {
+                const selectedCard = document.querySelector('input[name="saved-card"]:checked');
+                if (!selectedCard) {
+                    showToast('Выберите карту или введите новую', 'error');
+                    return;
+                }
+            }
+        }
+
         try {
             const orderRes = await fetch('http://localhost:8080/api/orders/public', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     customerId: profile.id,
-                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
+                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity })),
+                    paymentMethod: paymentMethod
                 })
             });
 
             if (!orderRes.ok) throw new Error('Ошибка создания заказа');
 
-            showToast('Заказ оформлен! Ожидайте звонка менеджера.', 'success');
+            const msg = paymentMethod === 'ONLINE'
+                ? '✅ Оплата прошла успешно! Заказ оформлен.'
+                : '📦 Заказ оформлен! Оплата при получении.';
+
+            showToast(msg, 'success');
             localStorage.removeItem('cart');
             setTimeout(() => window.location.href = '/profile.html', 2000);
         } catch (e) {
@@ -289,48 +350,7 @@
         }
     }
 
-    async function placeOrderGuest() {
-        const cart = getCart();
-        if (!cart.length) return;
-
-        const firstName = document.getElementById('o-firstname').value.trim();
-        const lastName = document.getElementById('o-lastname').value.trim();
-        const email = document.getElementById('o-email').value.trim();
-        const phone = document.getElementById('o-phone').value.trim();
-
-        if (!firstName || !lastName || !email) {
-            showToast('Заполните имя, фамилию и email', 'error');
-            return;
-        }
-
-        try {
-            const customerRes = await fetch('http://localhost:8080/api/customers/public', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, email, phone })
-            });
-            const customer = await customerRes.json();
-
-            const orderRes = await fetch('http://localhost:8080/api/orders/public', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerId: customer.id,
-                    items: cart.map(i => ({ productId: i.id, quantity: i.quantity }))
-                })
-            });
-
-            if (!orderRes.ok) throw new Error('Ошибка создания заказа');
-
-            showToast('Заказ оформлен! Менеджер свяжется с вами.', 'success');
-            localStorage.removeItem('cart');
-            setTimeout(() => window.location.href = '/index.html', 2000);
-        } catch (e) {
-            showToast('Ошибка: ' + e.message, 'error');
-        }
-    }
-    // В конце каждой страницы
-    if (localStorage.getItem('customer_token')) {
+    if (customerToken) {
         document.getElementById('profile-link').textContent = 'Профиль';
         document.getElementById('profile-link').href = '/profile.html';
     }

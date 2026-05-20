@@ -148,6 +148,18 @@
 <script src="/api.js"></script>
 <script>
     checkAuth();
+    if (hasRole('SELLER')) window.location.href = '/dashboard.html';
+
+    if (hasRole('SELLER')) {
+        document.getElementById('nav-payments')?.remove();
+        document.getElementById('nav-employees')?.remove();
+    }
+
+    const canEditPayments = hasRole('ADMIN', 'MANAGER');
+    if (!canEditPayments) {
+        document.querySelector('button[onclick="openPayModal()"]').style.display = 'none';
+        document.querySelector('button[onclick="exportExcel()"]').style.display = 'none';
+    }
     document.getElementById('sidebar-user').textContent = localStorage.getItem('email');
 
     const methodLabels = { CARD: 'Карта', CASH: 'Наличные', ONLINE: 'Онлайн' };

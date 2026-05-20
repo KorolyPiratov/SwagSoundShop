@@ -281,7 +281,8 @@
             localStorage.setItem('email', data.email);
             localStorage.setItem('role', data.role);
             showToast('Добро пожаловать!', 'success');
-            setTimeout(() => window.location.href = '/dashboard.html', 1000);
+            alert('token: ' + localStorage.getItem('token') + '\nrole: ' + localStorage.getItem('role'));
+            setTimeout(() => window.location.href = '/dashboard.html', 5000);
         } catch (e) {
             errorEl.textContent = 'Ошибка подключения'; errorEl.style.display = 'block';
         }

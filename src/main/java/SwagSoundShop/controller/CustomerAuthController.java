@@ -1,15 +1,10 @@
 package SwagSoundShop.controller;
 
+import SwagSoundShop.dto.request.CardRequest;
 import SwagSoundShop.dto.request.CustomerAuthRequest;
 import SwagSoundShop.dto.response.AuthResponse;
-import SwagSoundShop.model.Customer;
-import SwagSoundShop.model.Favorite;
-import SwagSoundShop.model.Product;
-import SwagSoundShop.model.Order;
-import SwagSoundShop.repository.CustomerRepository;
-import SwagSoundShop.repository.FavoriteRepository;
-import SwagSoundShop.repository.ProductRepository;
-import SwagSoundShop.repository.OrderRepository;
+import SwagSoundShop.model.*;
+import SwagSoundShop.repository.*;
 import SwagSoundShop.security.JwtTokenProvider;
 import SwagSoundShop.service.CustomerAuthService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +23,8 @@ public class CustomerAuthController {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CardRepository cardRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody CustomerAuthRequest request) {
@@ -114,6 +111,57 @@ public class CustomerAuthController {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Покупатель не найден"));
         favoriteRepository.deleteByCustomerIdAndProductId(customer.getId(), productId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/cards")
+    public ResponseEntity<List<Card>> getCards(
+            @RequestHeader("Authorization") String authHeader) {
+        String email = jwtTokenProvider.getEmailFromToken(authHeader.substring(7));
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Покупатель не найден"));
+        return ResponseEntity.ok(cardRepository.findByCustomerId(customer.getId()));
+    }
+
+    @PostMapping("/cards")
+    public ResponseEntity<Card> addCard(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CardRequest request) {
+        String email = jwtTokenProvider.getEmailFromToken(authHeader.substring(7));
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Покупатель не найден"));
+
+        String number = request.getCardNumber().replaceAll("\\s+", "");
+        String lastFour = number.substring(number.length() - 4);
+        String cardType = number.startsWith("4") ? "VISA" :
+                number.startsWith("5") ? "MASTERCARD" : "OTHER";
+        String cardHash = passwordEncoder.encode(number);
+
+        Card card = Card.builder()
+                .customer(customer)
+                .lastFour(lastFour)
+                .holderName(request.getHolderName().toUpperCase())
+                .expiry(request.getExpiry())
+                .cardType(cardType)
+                .cardHash(cardHash)
+                .build();
+
+        return ResponseEntity.ok(cardRepository.save(card));
+    }
+
+    @DeleteMapping("/cards/{cardId}")
+    public ResponseEntity<Void> deleteCard(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long cardId) {
+        String email = jwtTokenProvider.getEmailFromToken(authHeader.substring(7));
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Покупатель не найден"));
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Карта не найдена"));
+        if (!card.getCustomer().getId().equals(customer.getId())) {
+            return ResponseEntity.status(403).build();
+        }
+        cardRepository.deleteById(cardId);
         return ResponseEntity.ok().build();
     }
 }
