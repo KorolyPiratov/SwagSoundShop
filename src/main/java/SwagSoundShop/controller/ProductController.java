@@ -57,7 +57,8 @@ public class ProductController {
         String filename = "product_" + id + "_" + file.getOriginalFilename()
                 .replaceAll("[^a-zA-Z0-9._-]", "_");
 
-        Path uploadDir = Paths.get("src/main/resources/static/uploads/");
+        // Сохраняем в папку рядом с jar файлом
+        Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
         Files.createDirectories(uploadDir);
         Files.copy(file.getInputStream(), uploadDir.resolve(filename),
                 StandardCopyOption.REPLACE_EXISTING);
