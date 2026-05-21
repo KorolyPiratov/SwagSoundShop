@@ -1,6 +1,8 @@
+version: '3.9'
+
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: swagsoundshop-db
     environment:
       POSTGRES_DB: ssswagsoundshop
@@ -10,6 +12,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql  # ← важно!
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U swaguser -d ssswagsoundshop"]
       interval: 10s
@@ -28,11 +31,11 @@ services:
       APP_JWT_SECRET: swagSoundShopSecretKey2025SuperLongSecretForJWT
       APP_JWT_EXPIRATION: 86400000
     volumes:
-      - uploads_data:/app/uploads
+      - ./uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-  uploads_data:
