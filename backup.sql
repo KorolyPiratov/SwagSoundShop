@@ -1066,4 +1066,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "user" IN SCHEMA public GRANT ALL ON TABLES TO
 --
 
 \unrestrict sYez1zoG2AynkGHRs1xiy8IhHlK7C1zlPUfaObWBtkc6HfKV9sCK06mf8ajo1rw
-
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'user') THEN
+    CREATE ROLE "user";
+  END IF;
+END $$;
