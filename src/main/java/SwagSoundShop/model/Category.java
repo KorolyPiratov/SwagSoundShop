@@ -25,7 +25,7 @@ public class Category {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    @JsonIgnore
+    @JsonIgnoreProperties("children")
     private Category parent;
 
     @OneToMany(mappedBy = "parent")

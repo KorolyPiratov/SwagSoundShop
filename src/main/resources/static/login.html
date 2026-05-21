@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Вход</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-logo">SwagSoundShop</div>
+        <span class="login-accent"></span>
+        <div class="login-sub">Панель управления магазином</div>
+
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" placeholder="admin@swagsound.ru">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Пароль</label>
+            <input type="password" id="password" class="form-control" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="login()">
+            Войти
+        </button>
+
+        <div id="error" style="color:#C93638;font-size:13px;margin-top:12px;display:none"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/api.js"></script>
+<script>
+    if (getToken()) window.location.href = '/dashboard.html';
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') login();
+    });
+
+    async function login() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const errorEl = document.getElementById('error');
+        errorEl.style.display = 'none';
+
+        if (!email || !password) {
+            errorEl.textContent = 'Введите email и пароль';
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!res.ok) {
+                errorEl.textContent = 'Неверный email или пароль';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            const data = await res.json();
+            saveToken(data.token, data.email, data.role);
+            window.location.href = '/index.html';
+        } catch (e) {
+            errorEl.textContent = 'Ошибка подключения к серверу';
+            errorEl.style.display = 'block';
+        }
+    }
+</script>
+</body>
+</html>

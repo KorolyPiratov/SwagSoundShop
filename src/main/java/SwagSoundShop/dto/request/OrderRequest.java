@@ -7,4 +7,5 @@ import java.util.List;
 public class OrderRequest {
     private Long customerId;
     private List<OrderItemRequest> items;
+    private String paymentMethod;
 }

@@ -46,6 +46,10 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public Product save(Product product) {
+        return productRepository.save(product);
+    }
+
     public Product update(Long id, ProductRequest request) {
         Product product = getById(id);
         Category category = categoryRepository.findById(request.getCategoryId())

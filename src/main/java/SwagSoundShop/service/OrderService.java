@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final PaymentRepository paymentRepository;
 
     public List<Order> getAll() {
         return orderRepository.findAll();
@@ -73,7 +75,35 @@ public class OrderService {
 
         order.setItems(items);
         order.setTotalAmount(total);
-        return orderRepository.save(order);
+        order = orderRepository.save(order);
+
+        // Определяем метод оплаты
+        Payment.PaymentMethod method = Payment.PaymentMethod.CASH;
+        try {
+            if (request.getPaymentMethod() != null) {
+                method = Payment.PaymentMethod.valueOf(request.getPaymentMethod());
+            }
+        } catch (Exception ignored) {}
+
+        boolean isOnline = method == Payment.PaymentMethod.ONLINE;
+
+        // Автоматически создаём платёж
+        Payment payment = Payment.builder()
+                .order(order)
+                .amount(total)
+                .method(method)
+                .status(isOnline ? Payment.PaymentStatus.PAID : Payment.PaymentStatus.PENDING)
+                .paidAt(isOnline ? LocalDateTime.now() : null)
+                .build();
+        paymentRepository.save(payment);
+
+        // Если онлайн — сразу помечаем заказ как оплаченный
+        if (isOnline) {
+            order.setStatus(Order.OrderStatus.PAID);
+            order = orderRepository.save(order);
+        }
+
+        return order;
     }
 
     public Order updateStatus(Long id, Order.OrderStatus status) {

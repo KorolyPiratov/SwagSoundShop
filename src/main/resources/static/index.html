@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Музыкальные инструменты</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--honeydew); font-family: 'DM Sans', sans-serif; }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding: 0 48px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: box-shadow 0.3s;
+        }
+
+        .navbar.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+
+        .navbar-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--tomato);
+            text-decoration: none;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            position: relative;
+            z-index: 301;
+            user-select: none;
+        }
+
+        .navbar-logo::before { content: ''; font-size: 18px; }
+
+        /* ── ПЛАСТИНКА ── */
+        .vinyl-menu {
+            position: fixed;
+            top: 14px;
+            left: 0;
+            pointer-events: none;
+            z-index: 300;
+            transform: translateX(-68%);
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(.34,1.2,.64,1), opacity 0.4s ease;
+        }
+
+        .vinyl-menu.visible {
+            transform: translateX(-28%);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .vinyl-cart-badge {
+            background: #cc0000;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 9px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+
+        .vinyl-disc {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: radial-gradient(circle at center,
+            #1a1a1a 0%, #1a1a1a 20%,
+            #222 20%, #111 24%,
+            #222 28%, #111 32%,
+            #222 36%, #111 40%,
+            #222 44%, #111 48%,
+            #222 48%, #111 50%,
+            #222 52%, #111 56%,
+            #222 60%, #111 64%,
+            #222 68%, #111 72%,
+            #222 76%, #111 80%,
+            #1a1a1a 80%, #0d0d0d 84%,
+            #0d0d0d 84%, #1a1a1a 92%
+            );
+            box-shadow:
+                    0 16px 48px rgba(0,0,0,0.6),
+                    0 4px 16px rgba(0,0,0,0.4),
+                    inset 0 0 0 1px rgba(255,0,0,0.15);
+            animation: vinyl-spin 2.5s linear infinite;
+            animation-play-state: paused;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .vinyl-menu.visible .vinyl-disc {
+            animation-play-state: running;
+        }
+
+        @keyframes vinyl-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .vinyl-center {
+            position: absolute;
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 38% 35%, #ff4444, #cc0000, #8b0000);
+            z-index: 4;
+            animation: vinyl-spin-rev 2.5s linear infinite;
+            animation-play-state: paused;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2px;
+            box-shadow: 0 2px 12px rgba(200,0,0,0.5);
+        }
+
+        .vinyl-menu.visible .vinyl-center {
+            animation-play-state: running;
+        }
+
+        @keyframes vinyl-spin-rev {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        .vinyl-hole {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.15);
+            position: absolute;
+            z-index: 5;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .vinyl-links-wrap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            z-index: 6;
+            animation: vinyl-spin-rev 2.5s linear infinite;
+            animation-play-state: paused;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .vinyl-menu.visible .vinyl-links-wrap {
+            animation-play-state: running;
+        }
+
+        .vinyl-link {
+            font-size: 11px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            padding: 4px 12px;
+            border-radius: 20px;
+            transition: color 0.2s, background 0.2s;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        .vinyl-link:hover {
+            color: #FFFFFF;
+            background: rgba(0,0,0,0.15)
+        }
+
+        /* Войти */
+        .navbar-login {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 9px 18px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1.5px solid var(--border);
+        }
+
+        .navbar-login:hover {
+            color: var(--tomato);
+            border-color: var(--tomato);
+            background: rgba(201,54,56,0.04);
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: var(--tomato);
+            color: white;
+            padding: 80px 48px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title { font-family: 'Playfair Display', serif; font-size: 56px; line-height: 1.1; margin-bottom: 16px; font-weight: 900; position: relative; z-index: 400;}
+        .hero-title span { color: var(--peach); }
+        .hero-subtitle { font-size: 16px; opacity: 0.85; margin-bottom: 32px; line-height: 1.6; font-weight: 300; }
+        .hero-actions { display: flex; gap: 16px; padding-bottom: 80px; }
+
+        .btn-hero-primary { padding: 14px 32px; background: var(--peach); color: var(--text); border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+        .btn-hero-primary:hover { background: #f0ce80; transform: translateY(-2px); }
+
+        .btn-hero-secondary { padding: 14px 32px; background: rgba(255,255,255,0.15); color: white; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-hero-secondary:hover { background: rgba(255,255,255,0.25); }
+
+        .hero-visual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 80px; }
+        .hero-card { background: rgba(255,255,255,0.12); border-radius: var(--radius); padding: 24px; border: 1px solid rgba(255,255,255,0.2); text-align: center; transition: all 0.25s; backdrop-filter: blur(4px); }
+        .hero-card:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px); }
+        .hero-card-icon { font-size: 40px; margin-bottom: 8px; }
+        .hero-card-title { font-size: 14px; font-weight: 600; }
+        .hero-card-sub { font-size: 12px; opacity: 0.7; }
+
+        .hero-wave { position: absolute; bottom: 0; left: 0; width: 100%; line-height: 0; pointer-events: none; }
+        .hero-wave svg { display: block; width: 100%; }
+
+        /* ── SECTIONS ── */
+        .section { padding: 64px 48px; }
+        .section-header { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 40px; }
+        .section-header::before, .section-header::after { content: ''; width: 20%; height: 1.5px; background: linear-gradient(to right, transparent, var(--tomato)); flex-shrink: 0; }
+        .section-header::after { background: linear-gradient(to left, transparent, var(--tomato)); }
+        .section-header-text { text-align: center; white-space: nowrap; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 36px; color: var(--tomato); margin-bottom: 4px; }
+        .section-sub { color: var(--text-muted); font-size: 15px; }
+
+        .categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .category-card { background: white; border-radius: var(--radius); padding: 32px 24px; text-align: center; border: 2px solid transparent; cursor: pointer; transition: all 0.25s; text-decoration: none; color: var(--text); box-shadow: var(--shadow); }
+        .category-card:hover { border-color: #FA855A; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(250,133,90,0.2); }
+        .category-icon { font-size: 48px; margin-bottom: 12px; }
+        .category-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+        .category-count { font-size: 13px; color: var(--text-muted); }
+
+        .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .product-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); transition: all 0.25s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .product-img { height: 180px; background: linear-gradient(135deg, var(--honeydew), var(--peach)); display: flex; align-items: center; justify-content: center; font-size: 64px; }
+        .product-body { padding: 16px; }
+        .product-category { font-size: 11px; color: #FA855A; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .product-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; line-height: 1.3; }
+        .product-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; }
+        .product-price { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--tomato); }
+        .product-stock { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .btn-add-cart { padding: 8px 16px; background: var(--tomato); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-add-cart:hover { background: #b02e30; transform: translateY(-1px); }
+        .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        .banner { margin: 0 48px; background: var(--sky); border-radius: var(--radius); padding: 48px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .banner-title { font-family: 'Playfair Display', serif; font-size: 32px; margin-bottom: 8px; }
+        .banner-sub { opacity: 0.9; font-size: 15px; }
+
+        .footer { background: var(--text); color: rgba(255,255,255,0.7); padding: 40px 48px; text-align: center; font-size: 14px; margin-top: 64px; }
+        .footer strong { color: white; }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+<!-- ПЛАСТИНКА — вне navbar, z-index ниже navbar -->
+<div class="vinyl-menu" id="vinyl-menu">
+    <div class="vinyl-disc">
+        <div class="vinyl-links-wrap">
+            <a href="/index.html" class="vinyl-link">Главная</a>
+            <a href="/catalog.html" class="vinyl-link">Каталог</a>
+            <a href="/cart.html" class="vinyl-link" style="position:relative;padding-right:24px;">
+                Корзина
+                <span id="vinyl-cart-count" style="position:absolute;right:0;top:50%;transform:translateY(-50%);background:#cc0000;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">0</span>
+            </a>
+        </div>
+        <div class="vinyl-center">
+            <span style="font-size:20px"></span>
+            <span style="font-size:7px;color:rgba(255,255,255,0.9);font-weight:700;letter-spacing:1.5px;margin-top:2px">SSS</span>
+        </div>
+        <div class="vinyl-hole"></div>
+    </div>
+</div>
+<div id="logo-wrap" style="
+    position: fixed;
+    top: 0;
+    left: 48px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    z-index: 400;
+">
+    <a href="/index.html" class="navbar-logo">SwagSoundShop</a>
+</div>
+<!-- NAVBAR — z-index выше пластинки -->
+<nav class="navbar" id="navbar">
+    <div>
+    </div>
+    <a href="/customer-login.html" class="navbar-login" id="profile-link">👤 Войти</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div>
+        <div class="hero-title">Музыка начинается <span>здесь</span></div>
+        <div class="hero-subtitle">Лучшие музыкальные инструменты для начинающих и профессионалов. Гитары, клавишные, ударные и многое другое.</div>
+        <div class="hero-actions">
+            <a href="/catalog.html" class="btn-hero-primary">Смотреть каталог </a>
+            <a href="/cart.html" class="btn-hero-secondary">Моя корзина</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-card"><div class="hero-card-icon">🎸</div><div class="hero-card-title">Гитары</div><div class="hero-card-sub">Акустические и электро</div></div>
+        <div class="hero-card"><div class="hero-card-icon">🎹</div><div class="hero-card-title">Клавишные</div><div class="hero-card-sub">Синтезаторы и пианино</div></div>
+        <div class="hero-card"><div class="hero-card-icon">🥁</div><div class="hero-card-title">Ударные</div><div class="hero-card-sub">Барабаны и перкуссия</div></div>
+        <div class="hero-card"><div class="hero-card-icon">🎵</div><div class="hero-card-title">Аксессуары</div><div class="hero-card-sub">Струны и медиаторы</div></div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,60 C180,110 360,10 540,60 C720,110 900,10 1080,60 C1260,110 1350,30 1440,60 L1440,120 L0,120 Z" fill="#FA855A" opacity="0.5"/>
+            <path d="M0,80 C200,30 400,100 600,70 C800,40 1000,90 1200,60 C1320,45 1380,75 1440,65 L1440,120 L0,120 Z" fill="#FA855A" opacity="0.7"/>
+            <path d="M0,95 C150,70 350,115 550,90 C750,65 950,105 1150,85 C1300,70 1380,100 1440,95 L1440,120 L0,120 Z" fill="#FA855A"/>
+        </svg>
+    </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section">
+    <div class="section-header">
+        <div class="section-header-text">
+            <div class="section-title">Категории</div>
+            <div class="section-sub">Найдите инструмент в вашем жанре</div>
+        </div>
+    </div>
+    <div class="categories-grid" id="categories-grid"><div style="color:var(--text-muted);font-size:14px">Загрузка...</div></div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="section" style="padding-top:0">
+    <div class="section-header">
+        <div class="section-header-text">
+            <div class="section-title">Популярные товары</div>
+            <div class="section-sub">Лучшие инструменты в наличии</div>
+        </div>
+    </div>
+    <div class="products-grid" id="products-grid"><div style="color:var(--text-muted);font-size:14px">Загрузка...</div></div>
+</section>
+
+<!-- BANNER -->
+<div class="banner">
+    <div>
+        <div class="banner-title">Самовывоз из магазина</div>
+        <div class="banner-sub">Оформите заказ онлайн и заберите в удобное время</div>
+    </div>
+    <a href="/catalog.html" class="btn-hero-primary" style="white-space:nowrap">Выбрать товар →</a>
+</div>
+
+<footer class="footer">
+    <strong>SwagSoundShop</strong> — магазин музыкальных инструментов<br>
+    <span style="font-size:12px;margin-top:8px;display:block">© 2026 Все права не защищены</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const categoryIcons = {
+        'Гитары': '🎸', 'Клавишные': '🎹', 'Ударные': '🥁',
+        'Аксессуары': '🎵', 'Акустические': '🪕', 'Электрогитары': '⚡',
+        'Синтезаторы': '🎛️', 'Пианино': '🎹'
+    };
+
+    // ── Vinyl hover ──
+    const logoWrap = document.getElementById('logo-wrap');
+    const vinylMenu = document.getElementById('vinyl-menu');
+    let hideTimer = null;
+
+    function showVinyl() {
+        clearTimeout(hideTimer);
+        vinylMenu.classList.add('visible');
+    }
+
+    function scheduleHide() {
+        hideTimer = setTimeout(() => vinylMenu.classList.remove('visible'), 200);
+    }
+
+    logoWrap.addEventListener('mouseenter', showVinyl);
+    logoWrap.addEventListener('mouseleave', scheduleHide);
+    vinylMenu.addEventListener('mouseenter', showVinyl);
+    vinylMenu.addEventListener('mouseleave', scheduleHide);
+
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    function updateCartCount() {
+        const count = getCart().reduce((s, i) => s + i.quantity, 0);
+        const badge = document.getElementById('vinyl-cart-count');
+        if (badge) badge.textContent = count;
+    }
+
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); updateCartCount(); }
+    function updateCartCount() {
+        const count = getCart().reduce((s, i) => s + i.quantity, 0);
+        const badge = document.getElementById('vinyl-cart-count');
+        if (badge) badge.textContent = count;
+    }
+    document.addEventListener('DOMContentLoaded', updateCartCount);
+    window.addEventListener('storage', updateCartCount);
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function addToCart(product) {
+        const cart = getCart();
+        const existing = cart.find(i => i.id === product.id);
+        if (existing) existing.quantity++;
+        else cart.push({ ...product, quantity: 1 });
+        saveCart(cart);
+        showToast(`${product.name} добавлен в корзину`);
+    }
+
+    async function loadCategories() {
+        const res = await fetch('http://localhost:8080/api/categories');
+        const categories = await res.json();
+        const rootCats = categories.filter(c => !c.parent);
+        document.getElementById('categories-grid').innerHTML = rootCats.map(c => `
+            <a href="/catalog.html?category=${c.id}" class="category-card">
+                <div class="category-icon">${categoryIcons[c.name] || '🎵'}</div>
+                <div class="category-name">${c.name}</div>
+                <div class="category-count">${c.description || ''}</div>
+            </a>
+        `).join('');
+    }
+
+    async function loadProducts() {
+        const res = await fetch('http://localhost:8080/api/products');
+        const products = await res.json();
+        document.getElementById('products-grid').innerHTML = products.slice(0, 8).map(p => `
+    <div class="product-card">
+        <a href="/product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit">
+            <div class="product-img">
+                ${p.imageUrl
+            ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover">`
+            : categoryIcons[p.category?.name] || '🎵'
+        }
+            </div>
+        </a>
+        <div class="product-body">
+            <div class="product-category">${p.category?.name || ''}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-desc">${p.description || ''}</div>
+            <div class="product-footer">
+                <div>
+                    <div class="product-price">${Number(p.price).toLocaleString('ru')} ₽</div>
+                    <div class="product-stock">${p.stockQuantity > 0 ? `В наличии: ${p.stockQuantity} шт.` : 'Нет в наличии'}</div>
+                </div>
+                <button class="btn-add-cart"
+                    ${p.stockQuantity === 0 ? 'disabled' : ''}
+                    onclick='addToCart(${JSON.stringify({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        stockQuantity: p.stockQuantity
+                    })})'>
+                    В корзину
+                </button>
+            </div>
+        </div>
+    </div>
+`).join('');
+    }
+
+    if (localStorage.getItem('customer_token')) {
+        document.getElementById('profile-link').textContent = '👤 Профиль';
+        document.getElementById('profile-link').href = '/profile.html';
+    }
+
+    updateCartCount();
+    loadCategories();
+    loadProducts();
+</script>
+</body>
+</html>

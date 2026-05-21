@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagSoundShop — Каталог</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: var(--honeydew); }
+        .catalog-layout { display: grid; grid-template-columns: 260px 1fr; gap: 32px; padding: 40px 48px; margin-top: 68px; }
+        .filters-panel { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); height: fit-content; position: sticky; top: 84px; border: 1px solid var(--border); }
+        .filter-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--tomato); margin-bottom: 20px; }
+        .filter-section { margin-bottom: 20px; }
+        .filter-section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; }
+        .category-filter-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; font-size: 14px; transition: color 0.2s; }
+        .category-filter-item:hover { color: var(--tomato); }
+        .category-filter-item.active { color: var(--tomato); font-weight: 600; }
+        .subcategory-block { padding-left: 16px; margin-bottom: 2px; display: none; }
+        .subcategory-item { font-size: 13px; padding: 4px 0; color: var(--text-muted); }
+        .subcategory-item.active { color: var(--tomato); font-weight: 600; }
+        .price-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .catalog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .catalog-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--tomato); }
+        .catalog-count { font-size: 14px; color: var(--text-muted); }
+        .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .product-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); transition: all 0.2s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .product-img { height: 160px; background: linear-gradient(135deg, var(--honeydew), var(--peach)); display: flex; align-items: center; justify-content: center; font-size: 56px; }
+        .product-body { padding: 16px; }
+        .product-category { font-size: 11px; color: var(--coral); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .product-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .product-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; }
+        .product-price { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--tomato); }
+        .product-stock { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .btn-add-cart { padding: 8px 16px; background: var(--tomato); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
+        .btn-add-cart:hover { background: #b02e30; }
+        .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--tomato); color: white; padding: 14px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+        .btn-reset { width: 100%; padding: 8px; background: #f5f5f5; border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 8px; transition: background 0.2s; }
+        .btn-reset:hover { background: #eee; }
+    </style>
+</head>
+<body>
+
+<script src="/navbar.js"></script>
+
+<div class="catalog-layout">
+    <aside class="filters-panel">
+        <div class="filter-title">Фильтры</div>
+        <div class="filter-section">
+            <div class="filter-section-title">Категория</div>
+            <div id="category-filters">Загрузка...</div>
+        </div>
+        <div class="filter-section">
+            <div class="filter-section-title">Цена</div>
+            <div class="price-inputs">
+                <input class="form-control" id="price-min" type="number" placeholder="От" oninput="applyFilters()">
+                <input class="form-control" id="price-max" type="number" placeholder="До" oninput="applyFilters()">
+            </div>
+        </div>
+        <div class="filter-section">
+            <div class="filter-section-title">Поиск</div>
+            <input class="form-control" id="search" placeholder="Название товара..." oninput="applyFilters()">
+        </div>
+        <button class="btn-reset" onclick="resetFilters()">Сбросить фильтры</button>
+    </aside>
+
+    <div>
+        <div class="catalog-header">
+            <div class="catalog-title">Каталог</div>
+            <div class="catalog-count" id="catalog-count"></div>
+        </div>
+        <div class="products-grid" id="products-grid">
+            <div style="color:var(--text-muted)">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const categoryIcons = {
+        'Гитары': '🎸', 'Клавишные': '🎹', 'Ударные': '🥁',
+        'Аксессуары': '🎵', 'Акустические': '🪕', 'Электрогитары': '⚡',
+        'Синтезаторы': '🎛️', 'Пианино': '🎹'
+    };
+
+    let allProducts = [];
+    let allCategories = [];
+    let selectedCategoryIds = [];
+    let activRootId = null;
+
+    function getCart() { return JSON.parse(localStorage.getItem('cart') || '[]'); }
+    function saveCart(cart) { localStorage.setItem('cart', JSON.stringify(cart)); }
+
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function addToCart(product) {
+        const cart = getCart();
+        const existing = cart.find(i => i.id === product.id);
+        if (existing) existing.quantity++;
+        else cart.push({ ...product, quantity: 1 });
+        saveCart(cart);
+        showToast(`${product.name} добавлен в корзину`);
+    }
+
+    function getCategoryAndChildrenIds(categoryId) {
+        const children = allCategories.filter(c => c.parent?.id === categoryId).map(c => c.id);
+        return [categoryId, ...children];
+    }
+
+    function selectCategory(id) {
+        activRootId = id;
+        selectedCategoryIds = id === null ? [] : getCategoryAndChildrenIds(id);
+        document.querySelectorAll('.category-filter-item').forEach(el => {
+            const elId = el.dataset.id === 'all' ? null : parseInt(el.dataset.id);
+            el.classList.toggle('active', elId === id);
+        });
+        document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.subcategory-block').forEach(el => el.style.display = 'none');
+        if (id !== null) {
+            const subBlock = document.getElementById(`sub-${id}`);
+            if (subBlock) subBlock.style.display = 'block';
+        }
+        applyFilters();
+    }
+
+    function selectSubCategory(id, parentId) {
+        selectedCategoryIds = [id];
+        activRootId = parentId;
+        document.querySelectorAll('.category-filter-item').forEach(el => {
+            el.classList.toggle('active', parseInt(el.dataset.id) === parentId);
+        });
+        document.querySelectorAll('.subcategory-item').forEach(el => {
+            el.classList.toggle('active', parseInt(el.dataset.id) === id);
+        });
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('search').value.toLowerCase();
+        const minPrice = parseFloat(document.getElementById('price-min').value) || 0;
+        const maxPrice = parseFloat(document.getElementById('price-max').value) || Infinity;
+        const filtered = allProducts.filter(p => {
+            if (search && !p.name.toLowerCase().includes(search)) return false;
+            if (p.price < minPrice || p.price > maxPrice) return false;
+            if (selectedCategoryIds.length && !selectedCategoryIds.includes(p.category?.id)) return false;
+            return true;
+        });
+        renderProducts(filtered);
+    }
+
+    function renderProducts(products) {
+        document.getElementById('catalog-count').textContent = `${products.length} товаров`;
+        if (!products.length) {
+            document.getElementById('products-grid').innerHTML =
+                '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-muted)">Товары не найдены</div>';
+            return;
+        }
+        document.getElementById('products-grid').innerHTML = products.map(p => `
+        <div class="product-card">
+            <a href="/product-detail.html?id=${p.id}" style="text-decoration:none;color:inherit">
+                <div class="product-img">
+                    ${p.imageUrl
+            ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:cover">`
+            : categoryIcons[p.category?.name] || '🎵'
+        }
+                </div>
+            </a>
+            <div class="product-body">
+                <div class="product-category">${p.category?.name || ''}</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-desc">${p.description || ''}</div>
+                <div class="product-footer">
+                    <div>
+                        <div class="product-price">${Number(p.price).toLocaleString('ru')} ₽</div>
+                        <div class="product-stock">${p.stockQuantity > 0 ? `В наличии: ${p.stockQuantity} шт.` : 'Нет в наличии'}</div>
+                    </div>
+                    <button class="btn-add-cart"
+                        ${p.stockQuantity === 0 ? 'disabled' : ''}
+                        onclick='addToCart(${JSON.stringify({id: p.id, name: p.name, price: p.price})})'>
+                        В корзину
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    function resetFilters() {
+        selectedCategoryIds = [];
+        activRootId = null;
+        document.getElementById('search').value = '';
+        document.getElementById('price-min').value = '';
+        document.getElementById('price-max').value = '';
+        document.querySelectorAll('.category-filter-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.id === 'all');
+        });
+        document.querySelectorAll('.subcategory-block').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.subcategory-item').forEach(el => el.classList.remove('active'));
+        renderProducts(allProducts);
+    }
+
+    async function init() {
+        const [productsRes, categoriesRes] = await Promise.all([
+            fetch('http://localhost:8080/api/products'),
+            fetch('http://localhost:8080/api/categories')
+        ]);
+        allProducts = await productsRes.json();
+        allCategories = await categoriesRes.json();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryParam = urlParams.get('category');
+        if (categoryParam) {
+            selectedCategoryIds = getCategoryAndChildrenIds(parseInt(categoryParam));
+            activRootId = parseInt(categoryParam);
+        }
+
+        const rootCats = allCategories.filter(c => !c.parent);
+        document.getElementById('category-filters').innerHTML = `
+            <div class="category-filter-item ${!activRootId ? 'active' : ''}" data-id="all" onclick="selectCategory(null)">
+                Все товары
+            </div>
+            ${rootCats.map(c => {
+            const children = allCategories.filter(ch => ch.parent?.id === c.id);
+            return `
+                    <div class="category-filter-item ${activRootId === c.id ? 'active' : ''}" data-id="${c.id}" onclick="selectCategory(${c.id})">
+                        ${categoryIcons[c.name] || '🎵'} ${c.name}
+                    </div>
+                    ${children.length ? `
+                        <div class="subcategory-block" id="sub-${c.id}" style="display:${activRootId === c.id ? 'block' : 'none'}">
+                            ${children.map(ch => `
+                                <div class="subcategory-item category-filter-item" data-id="${ch.id}" onclick="selectSubCategory(${ch.id}, ${c.id})">
+                                    ↳ ${categoryIcons[ch.name] || ''} ${ch.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+        }).join('')}
+        `;
+
+        applyFilters();
+    }
+
+    init();
+</script>
+</body>
+</html>

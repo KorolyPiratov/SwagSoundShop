@@ -30,8 +30,8 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getByCustomer(customerId));
     }
 
-    @PostMapping
-    public ResponseEntity<Order> create(@RequestBody OrderRequest request) {
+    @PostMapping("/public")
+    public ResponseEntity<Order> createPublic(@RequestBody OrderRequest request) {
         return ResponseEntity.ok(orderService.create(request));
     }
 
