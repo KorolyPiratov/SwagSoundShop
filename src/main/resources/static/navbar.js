@@ -1,6 +1,4 @@
 // ── SwagSoundShop Navbar Component ──
-// Подключай на любой странице: <script src="/navbar.js"></script>
-// Добавь в <head>: <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 (function () {
 
